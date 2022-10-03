@@ -1,0 +1,39 @@
+[package]
+name = "Register-TenableADEventsListener"
+version = "1.0.0"
+edition = "2021"
+
+[dev-dependencies]
+mockall = "0.11.2"
+
+[dependencies]
+chrono = "0.4"
+gethostname = "0.2.3"
+serde_json = "1.0"
+log = "0.4.8"
+simplelog = "0.12.0"
+minidom = "0.15.0"
+state = "0.5.3"
+timer = "0.2.0"
+memory-stats = "1.0.0"
+flate2 = "1.0.24"
+clap = { version = "3.2.14", features = ["derive"] }
+serde = { version = "1.0.140", features = ["derive"] }
+winreg = "0.10"
+anyhow = "1.0"
+notify = "5.0.0"
+tempfile = "3"
+encoding_rs_io = "0.1"
+csv = "1.1"
+
+[dependencies.windows]
+version = "0.36.1"
+features = [
+    "alloc",
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_EventLog",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+    "Win32_Storage_FileSystem"
+]

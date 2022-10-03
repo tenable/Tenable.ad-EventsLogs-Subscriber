@@ -1,0 +1,140 @@
+{
+  "Events": [
+    {
+      "Id": 4769,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4661,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4674,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 8,
+      "ProviderName": "Microsoft-Windows-Sysmon"
+    },
+    {
+      "Id": 4768,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4689,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 12,
+      "ProviderName": "Microsoft-Windows-Kernel-General"
+    },
+    {
+      "Id": 4625,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 10,
+      "ProviderName": "Microsoft-Windows-Sysmon"
+    },
+    {
+      "Id": 4688,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 5857,
+      "ProviderName": "Microsoft-Windows-WMI-Activity"
+    },
+    {
+      "Id": 541,
+      "ProviderName": "Microsoft-Windows-DNSServer"
+    },
+    {
+      "Id": 4776,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 1,
+      "ProviderName": "Microsoft-Windows-EFS"
+    },
+    {
+      "Id": 5,
+      "ProviderName": "Microsoft-Windows-Sysmon"
+    },
+    {
+      "Id": 325,
+      "ProviderName": "ESENT"
+    },
+    {
+      "Id": 5145,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 1,
+      "ProviderName": "Microsoft-Windows-Sysmon"
+    },
+    {
+      "Id": 4799,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 8222,
+      "ProviderName": "VSSAudit"
+    },
+    {
+      "Id": 4770,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4662,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4771,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 8004,
+      "ProviderName": "Microsoft-Windows-Security-Netlogon"
+    },
+    {
+      "Id": 4634,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    },
+    {
+      "Id": 4624,
+      "ProviderName": "Microsoft-Windows-Security-Auditing"
+    }
+  ],
+  "Channels": [
+    "Microsoft-Windows-Sysmon/Operational",
+    "Microsoft-Windows-EFS/Debug",
+    "Microsoft-Windows-NTLM/Operational",
+    "Microsoft-Windows-WMI-Activity/Operational",
+    "Microsoft-Windows-DNSServer/Audit"
+  ],
+  "Audit": [
+    ",System,Audit Logoff,{0cce9216-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit Sensitive Privilege Use,{0CCE9228-69AE-11D9-BED3-505054503030},Success and Failure,,3",
+    ",System,Audit Logon,{0cce9215-69ae-11d9-bed3-505054503030},Success and Failure,,3",
+    ",System,Audit Process Termination,{0CCE922C-69AE-11D9-BED3-505054503030},Success,,1",
+    ",System,Audit Kerberos Service Ticket Operations,{0cce9240-69ae-11d9-bed3-505054503030},Success and Failure,,3",
+    ",System,Audit Kerberos Authentication Service,{0cce9242-69ae-11d9-bed3-505054503030},Success and Failure,,3",
+    ",System,Audit Handle Manipulation,{0cce9223-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit Other Object Access Events,{0cce9227-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit SAM,{0cce9220-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit Detailed File Share,{0cce9244-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit Process Creation,{0CCE922B-69AE-11D9-BED3-505054503030},Success,,1",
+    ",System,Audit Credential Validation,{0cce923f-69ae-11d9-bed3-505054503030},Success and Failure,,3",
+    ",System,Audit Security Group Management,{0cce9237-69ae-11d9-bed3-505054503030},Success,,1",
+    ",System,Audit Application Generated,{0CCE9222-69AE-11D9-BED3-505054503030},Success,,1",
+    ",System,Audit Directory Service Access,{0cce923b-69ae-11d9-bed3-505054503030},Success,,1"
+  ],
+  "RegistryValues": [
+    "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0\\AuditReceivingNTLMTraffic=4,2",
+    "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0\\RestrictSendingNTLMTraffic=4,1",
+    "MACHINE\\System\\CurrentControlSet\\Services\\Netlogon\\Parameters\\AuditNTLMInDomain=4,7"
+  ],
+  "PolRegistryValues": [
+    "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Audit\\ProcessCreationIncludeCmdLine_Enabled=4,1"
+  ]
+}
