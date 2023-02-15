@@ -6,25 +6,32 @@ use clap::Parser;
 use core::ffi::c_void;
 use flate2::{write::GzEncoder, Compression};
 use gethostname::gethostname;
-use log::{error, info};
+use log::{error, info, warn};
 use memory_stats::memory_stats;
 use minidom::Element;
+use notify::{Error, Event, ReadDirectoryChangesWatcher, Result as NotifyResult, Watcher};
 use serde::Deserialize;
 use simplelog::*;
 use state::Storage;
-use std::env::{current_dir, temp_dir};
-use std::ffi::OsString;
-use std::fs::{self, create_dir};
-use std::io::Write;
-use std::num::NonZeroU8;
-use std::os::windows::prelude::OpenOptionsExt;
-use std::sync::Mutex;
-use std::time::Duration as StdTimeDuration;
-use std::{ptr::null_mut, thread};
+use std::{
+    collections::{HashMap, HashSet},
+    env::{current_dir, temp_dir, VarError},
+    ffi::OsString,
+    fs::{self, create_dir},
+    io::Write,
+    num::NonZeroU8,
+    os::windows::prelude::OpenOptionsExt,
+    path::Path,
+    sync::{
+        mpsc::{channel, Receiver, Sender, TryRecvError},
+        Mutex,
+    },
+    time::{Duration as StdTimeDuration, Instant},
+    {ptr::null_mut, thread},
+};
 use timer::Timer;
 use windows::Win32::Foundation::{
-    CloseHandle, GetLastError, ERROR_EVT_CHANNEL_NOT_FOUND, ERROR_EVT_INVALID_QUERY,
-    ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS, HANDLE, WIN32_ERROR,
+    CloseHandle, GetLastError, ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS, HANDLE,
 };
 use windows::Win32::Security;
 use windows::Win32::Storage::FileSystem;
@@ -35,9 +42,13 @@ use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
 
 mod channel;
+mod setup;
 
-use channel::try_activate_and_refresh_channel_cache;
-use channel::DEFAULT_CHANNELS;
+use setup::{
+    generate_audit_csv, generate_gpt_tmpl_inf, generate_registry_pol, handle_file_changes,
+    log_configuration, read_setup_from_file, run_command, subscribe_to_channels, FileChanged,
+    SYNC_FILE_PATH,
+};
 
 const EVT_RENDER_FLAG_EVENT_XML: u32 = windows::Win32::System::EventLog::EvtRenderEventXml.0 as u32;
 const NAME: &str = "Name";
@@ -48,6 +59,10 @@ const EMPTY_STRING: &str = "";
 const ZERO_STRING: &str = "0";
 const TIME_CREATED: &str = "TimeCreated";
 const EVENT_LOGS_COUNT_LEAP: u32 = 1000; // Event logs counter leap to wait
+const DEFAULT_CONFIGURATION_FILE_PATH: &str = "./TenableADEventsListenerConfiguration.json";
+
+const TEN_MILLIS: StdTimeDuration = StdTimeDuration::from_millis(10);
+const ONE_MINUTE: StdTimeDuration = StdTimeDuration::from_secs(60);
 
 // Define insertion string list delimiter
 // We currently use the following sequence: \u001F\u001E
@@ -63,29 +78,60 @@ static mut PREVIEW: bool = false; // Enable or disable preview features
 static mut EVENT_LOGS_COUNT: u32 = 0; // Event logs counter
 static BUFFER: Storage<Mutex<Vec<u8>>> = Storage::new(); // Buffer to store event logs momentarily
 
-#[derive(Deserialize)]
-struct EventLog {
-    #[serde(rename = "Id")]
+#[derive(Deserialize, PartialEq, Eq, Hash)]
+pub struct EventLog {
+    #[serde(alias = "Id", alias = "id")]
     id: u32,
 
-    #[serde(rename = "ProviderName")]
+    #[serde(alias = "ProviderName", alias = "providerName")]
     provider_name: String,
 }
 
 #[derive(Deserialize)]
-struct EventsLogsConfiguration {
-    #[serde(rename = "Events")]
+pub struct EventsLogsConfiguration {
+    #[serde(alias = "Events", alias = "events")]
     events: Vec<EventLog>,
 
-    #[serde(rename = "Channels")]
+    #[serde(alias = "Channels", alias = "channels")]
     channels: Vec<String>,
+
+    #[serde(alias = "Audit", alias = "audit")]
+    audit: Vec<String>,
+
+    #[serde(alias = "RegistryValues", alias = "registryValues")]
+    registry_values: Vec<String>,
+
+    #[serde(alias = "PolRegistryValues", alias = "polRegistryValues")]
+    pol_values: Vec<String>,
 }
 
-#[derive(Parser)]
+impl PartialEq for EventsLogsConfiguration {
+    fn eq(&self, other: &Self) -> bool {
+        let self_events: HashSet<&EventLog> = self.events.iter().collect();
+        let self_channels: HashSet<&String> = self.channels.iter().collect();
+        let self_audit: HashSet<&String> = self.audit.iter().collect();
+        let self_registry_values: HashSet<&String> = self.registry_values.iter().collect();
+        let self_pol_values: HashSet<&String> = self.pol_values.iter().collect();
+
+        let other_events: HashSet<&EventLog> = other.events.iter().collect();
+        let other_channels: HashSet<&String> = other.channels.iter().collect();
+        let other_audit: HashSet<&String> = other.audit.iter().collect();
+        let other_registry_values: HashSet<&String> = other.registry_values.iter().collect();
+        let other_pol_values: HashSet<&String> = other.pol_values.iter().collect();
+
+        self_events == other_events
+            && self_channels == other_channels
+            && self_audit == other_audit
+            && self_registry_values == other_registry_values
+            && self_pol_values == other_pol_values
+    }
+}
+
+#[derive(Parser, Debug)]
 #[clap(
     about = "This command launches an event listener, which forwards each received event to an internal memory buffer. This buffer is flushed to the disk periodically."
 )]
-struct Arguments {
+pub struct Arguments {
     #[clap(
         short = 'p',
         long = "EventLogFilePath",
@@ -147,6 +193,54 @@ struct Arguments {
         help = "Enable preview features"
     )]
     preview: bool,
+
+    #[clap(
+        short = 'f',
+        long = "AuditFolder",
+        help = "Path of the folder containing the audit.csv file in the GPO"
+    )]
+    audit_folder: String,
+
+    #[clap(
+        short = 'a',
+        long = "AdministratorName",
+        help = "Name of the administrator account that can be used to execute some operations"
+    )]
+    administrator_name: String,
+
+    #[clap(short = 'i', long = "PdcName", help = "Name of the PDC")]
+    pdc_name: String,
+
+    #[clap(short = 'y', long = "DomainName", help = "Name of the domain")]
+    domain_name: String,
+
+    #[clap(
+        short = 'z',
+        long = "DomainControllerDnsName",
+        help = "DNS name of the domain controller"
+    )]
+    domain_controller_dns_name: String,
+
+    #[clap(
+        short = 'x',
+        long = "GptTmplFile",
+        help = "Path of the GptTmpl.inf file in the GPO"
+    )]
+    gpt_tmpl_file: String,
+
+    #[clap(
+        short = 'l',
+        long = "RegistryPolFile",
+        help = "Path of the Registry.pol file in the GPO"
+    )]
+    registry_pol_file: String,
+
+    #[clap(
+        long = "ConfigurationUpdateIntervalInMinutes",
+        default_value = "5",
+        help = "Minimum interval between each configuration update"
+    )]
+    conf_interval_in_minutes: NonZeroU8,
 }
 
 fn main() {
@@ -154,7 +248,34 @@ fn main() {
     info!("*****************************************************************************");
     info!("Starting event logs listener...");
 
-    let args = Arguments::parse();
+    let args = match Arguments::try_parse() {
+        Ok(args) => args,
+        Err(err) => {
+            error!("An error occurred while trying to parse the arguments: {err}");
+            err.exit();
+        }
+    };
+
+    let enable_gzip = args.enable_gzip;
+    let event_log_file_path = args.event_log_file_path.clone();
+    let timer_duration_seconds = args.timer_duration_seconds;
+    let duration_as_float = timer_duration_seconds as f32;
+    let duration_as_integer = args.timer_duration_seconds as i64;
+    let cpu_rate = args.cpu_rate;
+    let audit_folder = args.audit_folder.clone();
+    let administrator_name = args.administrator_name.clone();
+    let conf_interval = ONE_MINUTE * args.conf_interval_in_minutes.get() as u32;
+
+    let is_pdc = match is_pdc(args.pdc_name.as_str()) {
+        Ok(v) => v,
+        Err(err) => {
+            error!(
+                "An error occurred while trying to check if the current computer is the PDC, \
+                it will be considered as a normal DC: {err}"
+            );
+            false
+        }
+    };
 
     unsafe {
         PREVIEW = args.preview;
@@ -164,22 +285,29 @@ fn main() {
     }
 
     // Configuration
-    let configuration_file_content =
-        fs::read_to_string("./TenableADEventsListenerConfiguration.json")
-            .expect("Configuration file could not be loaded");
-    let configuration_file_json: EventsLogsConfiguration =
-        serde_json::from_str(&configuration_file_content)
-            .expect("Configuration file does not have correct format");
+    let path = Path::new(DEFAULT_CONFIGURATION_FILE_PATH);
+    if args.preview {
+        wait_for_setup_file(path);
+    }
+
+    let (mut configuration_file_json, configuration_file_content) = match read_setup_from_file(path)
+    {
+        Ok(result) => result,
+        Err(err) => {
+            // TODO: Add a retry mechanism?
+            error!("An error occurred while reading the setup file: {err}");
+            std::process::exit(err.raw_os_error().unwrap_or(1));
+        }
+    };
+
     log_configuration(configuration_file_content, &args);
 
-    set_processor_limit(args.cpu_rate);
+    set_processor_limit(cpu_rate);
 
     // Flush
     let timer = Timer::new();
-    let duration_as_float = args.timer_duration_seconds as f32;
-    let _timer_guard = timer.schedule_repeating(
-        Duration::seconds(args.timer_duration_seconds as i64),
-        move || {
+    let _timer_guard =
+        timer.schedule_repeating(Duration::seconds(duration_as_integer), move || {
             let mut buffer_content = match BUFFER.get().lock() {
                 Ok(b) => b,
                 Err(err) => {
@@ -190,42 +318,182 @@ fn main() {
 
             try_adjust_throughput(&duration_as_float);
 
-            flush_events_to_file(
-                &args.enable_gzip,
-                &args.event_log_file_path,
-                &buffer_content,
-            );
+            flush_events_to_file(&enable_gzip, &event_log_file_path, &buffer_content);
 
             buffer_content.clear();
             buffer_content.shrink_to_fit();
-        },
-    );
+        });
 
     // Buffer
     let mut buffer_vec = Vec::new();
 
     // Custom start event
     add_start_event(&mut buffer_vec, Utc::now());
+    BUFFER.set(Mutex::new(buffer_vec));
+
+    if args.preview {
+        // Generate audit.csv
+        if let Err(err) = generate_audit_csv(
+            &configuration_file_json.audit,
+            audit_folder.clone().into(),
+            &administrator_name[..],
+            is_pdc,
+        ) {
+            error!("An error ocurred while trying to generate the audit.csv file: {err}");
+        }
+
+        // Generate GptTmpl.inf
+        if let Err(err) = generate_gpt_tmpl_inf(
+            &configuration_file_json.registry_values,
+            args.gpt_tmpl_file.clone().into(),
+            is_pdc,
+        ) {
+            error!("An error occurred while trying to generate the GptTmpl.inf file: {err}");
+        }
+
+        // Generate Registry.pol
+        if let Err(err) = generate_registry_pol(
+            &configuration_file_json.pol_values,
+            &args.registry_pol_file[..],
+            &args.domain_name[..],
+            &args.domain_controller_dns_name[..],
+            is_pdc,
+        ) {
+            error!("An error occurred while trying to generate the Registry.pol file: {err}");
+        }
+
+        // Force gpupdate
+        if let Err(err) = run_command("gpupdate /force") {
+            error!("An error occurred while trying to force the GP update: {err}");
+        }
+    }
 
     // Subscriptions
-    BUFFER.set(Mutex::new(buffer_vec));
     let callback: EVT_SUBSCRIBE_CALLBACK = Some(subscription_callback);
-    let channels = build_channels(configuration_file_json.channels);
+    let mut subscribed_channels: HashMap<String, isize> = HashMap::new();
     let current_build_number = try_get_current_build_number();
-    for channel in channels {
-        let _ = subscribe_to_channel(
-            &configuration_file_json.events,
-            &channel,
-            callback,
-            current_build_number,
-        );
-    }
+    subscribe_to_channels(
+        callback,
+        current_build_number,
+        &configuration_file_json,
+        &mut subscribed_channels,
+    );
+
+    let (channel_sender, receiver): (Sender<()>, Receiver<()>) = channel();
+
+    // We need to declare this variable here so the value it refers to never goes out of scope.
+    // This is done to prevent the ReadDirectoryChangeWatcher object from being dropped which would cancel the monitoring.
+    let _file_watchers = if args.preview && is_pdc {
+        let config_watcher_sender = channel_sender.clone();
+
+        let config_watcher_result =
+            notify::recommended_watcher(move |res: NotifyResult<Event>| match res {
+                Ok(event) if event.kind.is_modify() => {
+                    info!("Received notification about changes on the configuration file");
+                    if let Err(e) = config_watcher_sender.send(()) {
+                        error!(
+                            "An error has occured while trying to send change notification: {e}"
+                        );
+                    }
+                }
+                Ok(_) => info!(
+                    "configuration file has been touched but not modified, \
+                    there is not changes to apply."
+                ),
+                Err(e) => {
+                    error!("An error has occurred while watching configuration file changes: {e}")
+                }
+            });
+
+        let config_watcher = setup_file_to_watch(path, config_watcher_result);
+        vec![config_watcher]
+    } else {
+        vec![]
+    };
 
     // Service loop
     info!("Listening to event logs...");
-    let ten_millis = StdTimeDuration::from_millis(10);
-    loop {
-        thread::sleep(ten_millis);
+    if args.preview && is_pdc {
+        let mut last_event = None;
+
+        loop {
+            match receiver.try_recv() {
+                Ok(_) => match last_event {
+                    None => {
+                        info!(
+                            "Configuration update has been requested, \
+                            execution scheduled in {} minutes",
+                            args.conf_interval_in_minutes
+                        );
+                        last_event = Some(Instant::now());
+                    }
+                    _ => {}
+                },
+                Err(TryRecvError::Disconnected) => {
+                    error!("An error has occurred while trying to receive file changes notification, configuration will not be updated");
+                    thread::sleep(ONE_MINUTE);
+                }
+                // No messages are available in the channel's buffer
+                Err(TryRecvError::Empty) => {}
+            };
+
+            let should_fire = match last_event {
+                Some(ts) => Instant::now() > ts + conf_interval,
+                _ => false,
+            };
+
+            if should_fire {
+                handle_file_changes(
+                    path,
+                    &mut subscribed_channels,
+                    &args,
+                    callback,
+                    current_build_number,
+                    &mut configuration_file_json,
+                    FileChanged::ConfigurationChanged,
+                    is_pdc,
+                );
+                last_event = None;
+            }
+
+            thread::sleep(StdTimeDuration::from_secs(1));
+        }
+    } else if args.preview && !is_pdc {
+        // Loops every five minute to resubscribe if the version of the sync file has changed
+        let mut version = None;
+
+        loop {
+            thread::sleep(conf_interval);
+
+            let new_version = match std::fs::read(SYNC_FILE_PATH) {
+                Ok(content) => Some(content),
+                Err(_) => None,
+            };
+
+            if new_version != version {
+                info!(
+                    "The version of the synchronization file ({SYNC_FILE_PATH}) has changed: \
+                    previous value was {version:?}, new value is {new_version:?}",
+                );
+
+                handle_file_changes(
+                    path,
+                    &mut subscribed_channels,
+                    &args,
+                    callback,
+                    current_build_number,
+                    &mut configuration_file_json,
+                    FileChanged::SyncFileChanged,
+                    is_pdc,
+                );
+
+                version = new_version;
+            }
+        }
+    } else {
+        loop {
+            thread::sleep(TEN_MILLIS);
+        }
     }
 }
 
@@ -257,32 +525,7 @@ fn setup_log() {
     };
 }
 
-fn log_configuration(configuration_file_content: String, arguments: &Arguments) {
-    info!("Configuration set: {}", configuration_file_content);
-
-    info!("CPU rate: {}%", arguments.cpu_rate);
-    info!(
-        "Throttle duration leap: {}ms",
-        unsafe { DURATION_LEAP }.as_millis()
-    );
-    info!("Gz file path: {}", arguments.event_log_file_path);
-    info!(
-        "Gz file rotation interval: {} seconds",
-        arguments.timer_duration_seconds
-    );
-    info!("Compressed: {}", arguments.enable_gzip);
-    info!("Maz buffer size: {}B", unsafe { MAX_MEMORY_SIZE_BYTES });
-    info!("Max throughput: {} events/second", unsafe {
-        MAX_THROUGHPUT
-    });
-    info!("Preview: {}", unsafe { PREVIEW });
-}
-
 fn try_get_current_build_number() -> Option<u32> {
-    if !unsafe { PREVIEW } {
-        return None;
-    }
-
     let current_build = match get_current_build_number() {
         Err(err) => {
             error!("An error occurred while trying to verify current Windows version: {err:?}");
@@ -331,10 +574,6 @@ unsafe fn set_affinity(process: HANDLE) {
 }
 
 unsafe fn set_cpu_rate_control(process: HANDLE, cpu_rate: NonZeroU8) {
-    if !PREVIEW {
-        return;
-    }
-
     const JOB_OBJECT_NAME: &str = "Tenable.AD Job";
 
     let job_object_attributes = Security::SECURITY_ATTRIBUTES::default();
@@ -415,7 +654,7 @@ unsafe extern "system" fn subscription_callback(
         EvtSubscribeActionDeliver => {
             match memory_stats() {
                 Some(m) => {
-                    // Discard events if memory limit is reached
+                    // Discard events if the memory limit is reached
                     if (m.physical_mem >= MAX_MEMORY_SIZE_BYTES)
                         || (m.virtual_mem >= MAX_MEMORY_SIZE_BYTES)
                     {
@@ -586,74 +825,6 @@ fn add_start_event(buffer: &mut Vec<u8>, now: DateTime<Utc>) {
     buffer.extend(start_event_bytes);
 }
 
-fn build_channels(additional_channels: Vec<String>) -> Vec<String> {
-    let mut channels = vec![];
-    for channel_value in DEFAULT_CHANNELS {
-        channels.push(channel_value.to_string());
-    }
-    for channel_value in additional_channels {
-        if channel_value.is_empty() {
-            continue;
-        }
-
-        channels.push(channel_value);
-    }
-
-    channels
-}
-
-fn subscribe_to_channel(
-    events: &Vec<EventLog>,
-    channel: &String,
-    callback: EVT_SUBSCRIBE_CALLBACK,
-    current_build_number: Option<u32>,
-) -> Result<(), WIN32_ERROR> {
-    let preview = unsafe { PREVIEW };
-    match try_activate_and_refresh_channel_cache(channel, preview, current_build_number) {
-        Err(err) => error!(
-            "An error occurred while refreshing the cache of the channel '{channel}': {err:?}"
-        ),
-        Ok(false) => info!("Channel '{channel}' did not need to be refreshed"),
-        Ok(true) => info!("Channel '{channel}' was refreshed"),
-    }
-
-    let context = null_mut();
-
-    // Query
-    let query = build_xml_query(events, channel);
-
-    let cloned_channel = channel.clone();
-    let cloned_query = query.clone();
-
-    unsafe {
-        let h_subscription = EvtSubscribe(
-            0,
-            None,
-            cloned_channel,
-            cloned_query,
-            0,
-            context,
-            callback,
-            1,
-        );
-        let status = GetLastError();
-
-        if h_subscription == 0 {
-            if status == ERROR_EVT_CHANNEL_NOT_FOUND {
-                error!("Channel {channel} was not found.");
-            } else if status == ERROR_EVT_INVALID_QUERY {
-                error!("Query {query} is not valid for {channel}.");
-            } else {
-                error!("EvtSubscribe failed for channel {channel}: ({status:?})");
-            }
-            Err(status)
-        } else {
-            info!("Successfully subscribed to {channel}.");
-            Ok(())
-        }
-    }
-}
-
 fn render_event(h_event: isize, flag: u32) -> String {
     let mut buffersize = 0;
     let mut bufferused: u32 = 0;
@@ -821,6 +992,45 @@ fn remove_last_chars(s: &String, n: usize) -> &str {
     result
 }
 
+fn wait_for_setup_file(path: &Path) {
+    info!("Start waiting for configuration file to be available at path: '{DEFAULT_CONFIGURATION_FILE_PATH}'...");
+
+    while !path.exists() {
+        thread::sleep(std::time::Duration::from_secs(1));
+    }
+}
+
+fn setup_file_to_watch(
+    path: &Path,
+    result: Result<ReadDirectoryChangesWatcher, Error>,
+) -> Option<ReadDirectoryChangesWatcher> {
+    match result {
+        Ok(mut watcher) => {
+            if let Err(e) = watcher.watch(path, notify::RecursiveMode::NonRecursive) {
+                warn!("An error has occurred while starting to watch changes on file with path '{}': {e} (No automatic update will be available based on changes made to this file)", path.display());
+                // We still return the watcher here because we will use it to try again to set the file to watcher later.
+                Some(watcher)
+            } else {
+                info!("Start monitoring file with path: '{}'", path.display());
+                Some(watcher)
+            }
+        }
+        Err(e) => {
+            warn!("An error has occurred while setting up the file watcher for file with path '{}': {e} (No automatic update will be available)", path.display());
+            None
+        }
+    }
+}
+
+fn is_pdc(pdc_name: &str) -> Result<bool, VarError> {
+    let current_name = std::env::var("ComputerName")?;
+
+    info!("The name of the current computer is '{current_name}'");
+
+    let is_pdc = current_name.to_ascii_lowercase() == pdc_name.to_ascii_lowercase();
+    Ok(is_pdc)
+}
+
 #[cfg(test)]
 mod tests {
     mod flush_events_to_file {
@@ -926,7 +1136,7 @@ mod tests {
     }
 
     mod build_channels {
-        use super::super::*;
+        use crate::setup::build_channels;
 
         #[test]
         fn it_should_add_channels_to_the_default_channels() {
@@ -938,7 +1148,7 @@ mod tests {
             ];
 
             // Act
-            let result = build_channels(additional_channels);
+            let result = build_channels(&additional_channels);
 
             // Assert
             assert_eq!(
@@ -960,7 +1170,7 @@ mod tests {
             let additional_channels = vec![];
 
             // Act
-            let result = build_channels(additional_channels);
+            let result = build_channels(&additional_channels);
 
             // Assert
             assert_eq!(
@@ -985,7 +1195,7 @@ mod tests {
             ];
 
             // Act
-            let result = build_channels(additional_channels);
+            let result = build_channels(&additional_channels);
 
             // Assert
             assert_eq!(
@@ -1642,6 +1852,8 @@ mod tests {
 
     mod subscribe_to_channel {
         use super::super::*;
+        use crate::setup::subscribe_to_channel;
+        use windows::Win32::Foundation::{ERROR_EVT_CHANNEL_NOT_FOUND, ERROR_EVT_INVALID_QUERY};
 
         #[test]
         fn it_should_subscribe_to_a_valid_channel_and_event() {

@@ -1,0 +1,1629 @@
+<Rsop xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.microsoft.com/GroupPolicy/Rsop">
+  <ReadTime>2023-02-06T08:59:00.9108173Z</ReadTime>
+  <DataType>LoggedData</DataType>
+  <ComputerResults>
+    <Version>2228228</Version>
+    <Name>ALSID\QASAAS-AFAD-DC1$</Name>
+    <Domain>alsid.corp</Domain>
+    <SOM>alsid.corp/Domain Controllers</SOM>
+    <Site>Default-First-Site-Name</Site>
+    <SearchedSOM>
+      <Path>Local</Path>
+      <Type>Local</Type>
+      <Order>1</Order>
+      <BlocksInheritance>false</BlocksInheritance>
+      <Blocked>false</Blocked>
+      <Reason>Normal</Reason>
+    </SearchedSOM>
+    <SearchedSOM>
+      <Path>alsid.corp</Path>
+      <Type>Domain</Type>
+      <Order>3</Order>
+      <BlocksInheritance>false</BlocksInheritance>
+      <Blocked>false</Blocked>
+      <Reason>Normal</Reason>
+    </SearchedSOM>
+    <SearchedSOM>
+      <Path>alsid.corp/Domain Controllers</Path>
+      <Type>OU</Type>
+      <Order>4</Order>
+      <BlocksInheritance>false</BlocksInheritance>
+      <Blocked>false</Blocked>
+      <Reason>Normal</Reason>
+    </SearchedSOM>
+    <SearchedSOM>
+      <Path>alsid.corp/Configuration/Sites/Default-First-Site-Name</Path>
+      <Type>Site</Type>
+      <Order>2</Order>
+      <BlocksInheritance>false</BlocksInheritance>
+      <Blocked>false</Blocked>
+      <Reason>Normal</Reason>
+    </SearchedSOM>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-32-544</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">BUILTIN\Administrators</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-1-0</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Everyone</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-32-554</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">BUILTIN\Pre-Windows 2000 Compatible Access</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-32-545</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">BUILTIN\Users</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-32-560</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">BUILTIN\Windows Authorization Access Group</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-2</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NT AUTHORITY\NETWORK</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-11</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NT AUTHORITY\Authenticated Users</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-15</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NT AUTHORITY\This Organization</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-21-1330992217-1765558742-1076390259-1002</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">ALSID\QASAAS-AFAD-DC1$</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-21-1330992217-1765558742-1076390259-516</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">ALSID\Domain Controllers</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-9</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERS</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-18-1</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Authentication authority asserted identity</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-5-21-1330992217-1765558742-1076390259-572</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">ALSID\Denied RODC Password Replication Group</Name>
+    </SecurityGroup>
+    <SecurityGroup>
+      <SID xmlns="http://www.microsoft.com/GroupPolicy/Types">S-1-16-16384</SID>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Mandatory Label\System Mandatory Level</Name>
+    </SecurityGroup>
+    <SlowLink>false</SlowLink>
+    <ExtensionStatus>
+      <Name>Group Policy Infrastructure</Name>
+      <Identifier>{00000000-0000-0000-0000-000000000000}</Identifier>
+      <BeginTime>2023-02-06T08:58:45</BeginTime>
+      <EndTime>2023-02-06T08:58:47</EndTime>
+      <LoggingStatus>Complete</LoggingStatus>
+      <Error>0</Error>
+    </ExtensionStatus>
+    <ExtensionStatus>
+      <Name>Group Policy Scheduled Tasks</Name>
+      <Identifier>{AADCED64-746C-4633-A97C-D61349046527}</Identifier>
+      <BeginTime>2023-02-06T08:58:46</BeginTime>
+      <EndTime>2023-02-06T08:58:47</EndTime>
+      <LoggingStatus>Complete</LoggingStatus>
+      <Error>0</Error>
+    </ExtensionStatus>
+    <ExtensionStatus>
+      <Name>Registry</Name>
+      <Identifier>{35378EAC-683F-11D2-A89A-00C04FBBCFA2}</Identifier>
+      <BeginTime>2023-02-06T08:58:45</BeginTime>
+      <EndTime>2023-02-06T08:58:45</EndTime>
+      <LoggingStatus>Complete</LoggingStatus>
+      <Error>0</Error>
+    </ExtensionStatus>
+    <ExtensionStatus>
+      <Name>Security</Name>
+      <Identifier>{827D319E-6EAC-11D2-A4EA-00C04F79F83A}</Identifier>
+      <BeginTime>2023-02-06T08:58:45</BeginTime>
+      <EndTime>2023-02-06T08:58:46</EndTime>
+      <LoggingStatus>Complete</LoggingStatus>
+      <Error>0</Error>
+    </ExtensionStatus>
+    <GPO>
+      <Name>Tenable.ad</Name>
+      <Path>
+        <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{EF253028-09B7-4F00-9B7B-C2B470398B00}</Identifier>
+        <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+      </Path>
+      <VersionDirectory>1</VersionDirectory>
+      <VersionSysvol>1</VersionSysvol>
+      <Enabled>true</Enabled>
+      <IsValid>true</IsValid>
+      <FilterAllowed>true</FilterAllowed>
+      <AccessDenied>false</AccessDenied>
+      <Link>
+        <SOMPath>alsid.corp/Domain Controllers</SOMPath>
+        <SOMOrder>1</SOMOrder>
+        <AppliedOrder>3</AppliedOrder>
+        <LinkOrder>3</LinkOrder>
+        <Enabled>true</Enabled>
+        <NoOverride>true</NoOverride>
+      </Link>
+      <SecurityFilter>NT AUTHORITY\Authenticated Users</SecurityFilter>
+      <ExtensionName>Group Policy Scheduled Tasks</ExtensionName>
+      <ExtensionName>Security</ExtensionName>
+      <ExtensionName>Registry</ExtensionName>
+      <ExtensionName>Group Policy Infrastructure</ExtensionName>
+    </GPO>
+    <GPO>
+      <Name>Default Domain Policy</Name>
+      <Path>
+        <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{31B2F340-016D-11D2-945F-00C04FB984F9}</Identifier>
+        <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+      </Path>
+      <VersionDirectory>2</VersionDirectory>
+      <VersionSysvol>2</VersionSysvol>
+      <Enabled>true</Enabled>
+      <IsValid>true</IsValid>
+      <FilterAllowed>true</FilterAllowed>
+      <AccessDenied>false</AccessDenied>
+      <Link>
+        <SOMPath>alsid.corp</SOMPath>
+        <SOMOrder>1</SOMOrder>
+        <AppliedOrder>1</AppliedOrder>
+        <LinkOrder>2</LinkOrder>
+        <Enabled>true</Enabled>
+        <NoOverride>false</NoOverride>
+      </Link>
+      <SecurityFilter>NT AUTHORITY\Authenticated Users</SecurityFilter>
+      <ExtensionName>Security</ExtensionName>
+    </GPO>
+    <GPO>
+      <Name>Local Group Policy</Name>
+      <Path>
+        <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">LocalGPO</Identifier>
+      </Path>
+      <VersionDirectory>0</VersionDirectory>
+      <VersionSysvol>0</VersionSysvol>
+      <Enabled>true</Enabled>
+      <IsValid>true</IsValid>
+      <FilterAllowed>true</FilterAllowed>
+      <AccessDenied>false</AccessDenied>
+      <Link>
+        <SOMPath>Local</SOMPath>
+        <SOMOrder>1</SOMOrder>
+        <AppliedOrder>0</AppliedOrder>
+        <LinkOrder>1</LinkOrder>
+        <Enabled>true</Enabled>
+        <NoOverride>false</NoOverride>
+      </Link>
+    </GPO>
+    <GPO>
+      <Name>Default Domain Controllers Policy</Name>
+      <Path>
+        <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+        <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+      </Path>
+      <VersionDirectory>1</VersionDirectory>
+      <VersionSysvol>1</VersionSysvol>
+      <Enabled>true</Enabled>
+      <IsValid>true</IsValid>
+      <FilterAllowed>true</FilterAllowed>
+      <AccessDenied>false</AccessDenied>
+      <Link>
+        <SOMPath>alsid.corp/Domain Controllers</SOMPath>
+        <SOMOrder>2</SOMOrder>
+        <AppliedOrder>2</AppliedOrder>
+        <LinkOrder>4</LinkOrder>
+        <Enabled>true</Enabled>
+        <NoOverride>false</NoOverride>
+      </Link>
+      <SecurityFilter>NT AUTHORITY\Authenticated Users</SecurityFilter>
+      <ExtensionName>Security</ExtensionName>
+    </GPO>
+    <ExtensionData>
+      <Extension xmlns:q1="http://www.microsoft.com/GroupPolicy/Settings/ScheduledTasks" xsi:type="q1:ScheduledTasksSettings" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+        <q1:ScheduledTasksRsopSetting>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{EF253028-09B7-4F00-9B7B-C2B470398B00}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q1:BaseInstanceXml CLASSNAME="RSOP_PolmkrImmediateTaskV2Setting">
+            <q1:PROPERTY NAME="name">
+              <q1:VALUE>TenableADTask_354b0096-1877-42bc-b310-71aec7eee3ea</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="GPOID">
+              <q1:VALUE>cn={EF253028-09B7-4F00-9B7B-C2B470398B00},cn=policies,cn=system,DC=alsid,DC=corp</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="SOMID">
+              <q1:VALUE>OU=Domain Controllers,DC=alsid,DC=corp</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="polmkrBaseGpeGuid">
+              <q1:VALUE>{CAB54552-DEEA-4691-817E-ED4A4D1AFC72}</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="polmkrBaseCseGuid">
+              <q1:VALUE>{AADCED64-746C-4633-A97C-D61349046527}</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="polmkrBaseGpoDisplayName">
+              <q1:VALUE>Tenable.ad</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="polmkrBaseGpoGuid">
+              <q1:VALUE>{EF253028-09B7-4F00-9B7B-C2B470398B00}</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="id">
+              <q1:VALUE>{B90ABF97-87B2-4F96-AE5B-13CE32A7FAAD}</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="precedence">
+              <q1:VALUE>1</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="creationTime">
+              <q1:VALUE>20230206085840.950000+000</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:PROPERTY NAME="polmkrBaseHash">
+              <q1:VALUE>RSOP_PolmkrImmediateTaskV2Setting.polmkrName="TenableADTask_354b0096-1877-42bc-b310-71aec7eee3ea"</q1:VALUE>
+            </q1:PROPERTY>
+            <q1:INSTANCE CLASSNAME="RSOP_PolmkrImmediateTaskV2Item">
+              <q1:PROPERTY NAME="polmkrClassClsid">
+                <q1:VALUE>{9756B581-76EC-4169-9AFC-0CA8D43ADB5F}</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassName">
+                <q1:VALUE>TenableADTask_354b0096-1877-42bc-b310-71aec7eee3ea</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassImage">
+                <q1:VALUE>0</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassChanged">
+                <q1:VALUE>2023-02-06 08:58:28</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassUid">
+                <q1:VALUE>{354b0096-1877-42bc-b310-71aec7eee3ea}</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassUserContext">
+                <q1:VALUE>0</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassRemovePolicy">
+                <q1:VALUE>0</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrAction">
+                <q1:VALUE>C</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrName">
+                <q1:VALUE>TenableADTask_354b0096-1877-42bc-b310-71aec7eee3ea</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrRunAs">
+                <q1:VALUE>NT AUTHORITY\System</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrLogonType">
+                <q1:VALUE>S4U</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrActionResolved">
+                <q1:VALUE>C</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassResultCodeValue">
+                <q1:VALUE>0</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassResultCode">
+                <q1:VALUE>0x00000000</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:PROPERTY NAME="polmkrClassResultText">
+                <q1:VALUE>The operation completed successfully.</q1:VALUE>
+              </q1:PROPERTY>
+              <q1:Task version="1.3">
+                <q1:RegistrationInfo>
+                  <q1:Author>Tenable.ad</q1:Author>
+                  <q1:Description>This scheduled task has been created as part of the deployment of Tenable.ad</q1:Description>
+                </q1:RegistrationInfo>
+                <q1:Triggers>
+                  <q1:RegistrationTrigger>
+                    <q1:Enabled>true</q1:Enabled>
+                  </q1:RegistrationTrigger>
+                </q1:Triggers>
+                <q1:Settings>
+                  <q1:AllowStartOnDemand>false</q1:AllowStartOnDemand>
+                  <q1:DisallowStartIfOnBatteries>false</q1:DisallowStartIfOnBatteries>
+                  <q1:StopIfGoingOnBatteries>false</q1:StopIfGoingOnBatteries>
+                  <q1:AllowHardTerminate>false</q1:AllowHardTerminate>
+                  <q1:StartWhenAvailable>true</q1:StartWhenAvailable>
+                  <q1:Enabled>true</q1:Enabled>
+                  <q1:Hidden>false</q1:Hidden>
+                  <q1:MultipleInstancesPolicy>IgnoreNew</q1:MultipleInstancesPolicy>
+                  <q1:Priority>7</q1:Priority>
+                  <q1:ExecutionTimeLimit>PT0S</q1:ExecutionTimeLimit>
+                  <q1:IdleSettings>
+                    <q1:Duration>PT1M</q1:Duration>
+                    <q1:WaitTimeout>PT2H</q1:WaitTimeout>
+                    <q1:StopOnIdleEnd>false</q1:StopOnIdleEnd>
+                    <q1:RestartOnIdle>false</q1:RestartOnIdle>
+                  </q1:IdleSettings>
+                </q1:Settings>
+                <q1:Principals>
+                  <q1:Principal id="Author">
+                    <q1:UserId>NT AUTHORITY\System</q1:UserId>
+                    <q1:LogonType>S4U</q1:LogonType>
+                    <q1:RunLevel>HighestAvailable</q1:RunLevel>
+                  </q1:Principal>
+                </q1:Principals>
+                <q1:Actions>
+                  <q1:Exec>
+                    <q1:Command>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe</q1:Command>
+                    <q1:Arguments>-NoProfile -NonInteractive -Command (Invoke-Command -ScriptBlock {    Import-Module ActiveDirectory
+
+    $localDomainController = Get-ADDomainController 127.0.0.1
+    $currentDomain = Get-ADDomain
+    $currentDomainDn = $currentDomain.DistinguishedName
+    $global:EnvMachineName = $env:computername
+    $global:OsVersion = [System.Environment]::OSVersion.Version
+    $global:OsVersion = [System.String]::Concat($global:OsVersion.Major, """.""", $global:OsVersion.Minor, """.""", $global:OsVersion.Build)
+    $global:LocalDomainControllerDNSName = $localDomainController.HostName
+    $global:LocalDomainControllerSite = $localDomainController.Site
+    $global:PrimaryDomainControllerFilter = $Null
+    If ($Null -ne $currentDomain.PDCEmulator) {
+        $global:PrimaryDomainControllerFilter = $currentDomain.PDCEmulator
+    } Else {
+        $global:PrimaryDomainControllerFilter = '10.100.0.10'
+    }
+    $global:PrimaryDomainControllerSite = (Get-ADDomainController $global:PrimaryDomainControllerFilter).Site
+    $global:AuditPath = '\\__DNSNAME__\sysvol\alsid.corp\Policies\{ef253028-09b7-4f00-9b7b-c2b470398b00}\Machine\Microsoft\Windows NT\Audit\'
+    $global:AuditPath = $global:AuditPath.replace("""__DNSNAME__""", $global:LocalDomainControllerDNSName)
+    $global:AuditCSVPath = $global:AuditPath + 'audit.csv'
+    $global:GptTmplInfPath = '\\__DNSNAME__\sysvol\alsid.corp\Policies\{ef253028-09b7-4f00-9b7b-c2b470398b00}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf'
+    $global:GptTmplInfPath = $global:GptTmplInfPath.replace("""__DNSNAME__""", $global:LocalDomainControllerDNSName)
+    $global:RegistryPolPath = '\\__DNSNAME__\sysvol\alsid.corp\Policies\{ef253028-09b7-4f00-9b7b-c2b470398b00}\Machine\Registry.pol'
+    $global:RegistryPolPath = $global:RegistryPolPath.replace("""__DNSNAME__""", $global:LocalDomainControllerDNSName)
+    $envTemp = (Get-Item $env:TEMP).Fullname
+    $global:TemporaryTaskFolderLocation = $envTemp + '\TenableADTask_' +  [guid]::NewGuid() + '\'
+    $global:TempAuditCsvFileLocation = $global:TemporaryTaskFolderLocation + 'audit.csv'
+    $sysvolLocationRegKey = Get-Item -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters' -ErrorAction Stop
+    $defaultSysvolPath = $sysvolLocationRegKey.GetValue('Sysvol', $Null)
+    $global:IoaFolderLocation = $defaultSysvolPath + """\\""" + $currentDomain.DnsRoot + """\Policies\{ef253028-09b7-4f00-9b7b-c2b470398b00}\Machine\IOA"""
+    $global:GptIniLocation = $defaultSysvolPath + """\\""" + $currentDomain.DnsRoot + """\Policies\{ef253028-09b7-4f00-9b7b-c2b470398b00}\gpt.ini"""
+    $global:DeleteOldGpo = $False
+    $global:OldGpoFolder = $defaultSysvolPath + """\\""" + $currentDomain.DnsRoot + """\Policies\{__OLDGPOID__}"""
+    $global:Channels = @('Microsoft-Windows-NTLM/Operational','Microsoft-Windows-EFS/Debug','Microsoft-Windows-DNSServer/Audit','Microsoft-Windows-Sysmon/Operational','Microsoft-Windows-WMI-Activity/Operational')
+
+    function Register-Channels {
+        try {
+            If ($True) {
+                Write-Host """[-] Channels will be registered by the listener"""
+            } Else {
+                Write-Host """[-] Registering channels..."""
+                foreach ($channel in $global:Channels) {
+                    Write-Host """[-] Registering: """ $channel
+                    (Get-Item HKLM:\).OpenSubKey("""SYSTEM""", $True).CreateSubKey("""CurrentControlSet\Services\EventLog\\""" + $channel)
+                }
+            }
+        } catch {
+            Write-Error $_.Exception
+        }
+    }
+
+    function Register-EventListener {
+        process {
+            try {
+                Write-Host """[-] Running executable Register-TenableADEventsListener.exe"""
+                $executableLocation = $global:IoaFolderLocation + '\Register-TenableADEventsListener.exe'
+
+                $domainControllerEventLogFileLocation = $global:IoaFolderLocation + '\' + $global:EnvMachineName + '-' + $global:OsVersion + '-0_' + '.gz'
+                Write-Host """[-] Events will be written to path: $domainControllerEventLogFileLocation"""
+
+                # Events file write frequency depends upon the fact current DC is in PDC site and FRS is still in use
+                $ioaFileWriteFrequencyInSeconds = 15
+                try {
+                    $dfsrFilter = 'DistinguishedName -eq """CN=DFSR-GlobalSettings,' + $((Get-ADDomain).SystemsContainer) + '"""'
+                    $dfsrObject = Get-ADObject -Filter $dfsrFilter -Properties msDFSR-Flags
+                    If($Null -ne $dfsrObject -And $dfsrObject.'msDFSR-Flags' -eq 48) {
+                        # 48 means DFSR is active
+                        Write-Host """[-] Current domain controller replication process is handled by DFSR"""
+                    } Else {
+                        Write-Host """[-] Current domain controller replication is (still) handled by FRS instead of DFSR"""
+                        If($global:LocalDomainControllerSite -eq $global:PrimaryDomainControllerSite) {
+                            Write-Host """[-] Current domain controller is in primary domain controller site ($global:PrimaryDomainControllerSite): intra-site replication applies"""
+                        } Else {
+                            Write-Host """[-] Current domain controller site ($global:LocalDomainControllerSite) is in a site different from primary domain controller site ($global:PrimaryDomainControllerSite): inter-site replication applies"""
+                            $interSitesIpDn = """CN=IP,CN=Inter-Site Transports,CN=Sites,CN=Configuration,""" + $currentDomainDn
+                            $repAdminOutput = repadmin /showism $interSitesIpDn /verbose
+                            $repInterval = Get-InterSitesReplicationIntervalMinutes -Output $repAdminOutput -SourceSiteDn $global:LocalDomainControllerSite -DestinationSiteDn $global:PrimaryDomainControllerSite
+                            $fileWriteFrequencyInMinutes = [int]$repInterval + 5
+                            $ioaFileWriteFrequencyInSeconds = $fileWriteFrequencyInMinutes * 60
+                            Write-Host """[-] Shortest path found between sites $global:LocalDomainControllerSite and $global:PrimaryDomainControllerSite : events file will be written every $fileWriteFrequencyInMinutes minutes"""
+                        }
+                    }
+                } catch {
+                    Write-Error $_.Exception
+                }
+
+                $domainControllerEventLogFileLocationString = '"""' + $domainControllerEventLogFileLocation + '"""'
+                $auditPath = $global:AuditPath.TrimEnd('\')
+                $auditPathString = '"""' + $auditPath + '"""'
+                $administratorSid = (Get-ADDomain).DomainSID.Value + "-500"
+                $administrator = Get-ADUser -Identity $administratorSid
+                $administratorName = $administrator.SamAccountName
+                $pdcName = 'QASAAS-AFAD-DC1'
+                $domainName = 'alsid.corp'
+                $domainControllerDnsName = 'qasaas-afad-dc1.alsid.corp'
+                $gptTmplInfPath = $global:GptTmplInfPath.TrimEnd('\')
+                $gptTmplInfPathString = '"""' + $gptTmplInfPath + '"""'
+                $registryPolPath = $global:RegistryPolPath.TrimEnd('\')
+                $registryPolPathString = '"""' + $registryPolPath + '"""'
+                $executableArguments = @('-t',$ioaFileWriteFrequencyInSeconds,'-p',$domainControllerEventLogFileLocationString,'-g','-w','-f',$auditPathString,'-a',$administratorName,'-i',$pdcName,'-y',$domainName,'-z',$domainControllerDnsName,'-x',$gptTmplInfPathString,'-l',$registryPolPathString)
+                $startedProcessPid = (Start-Process -PassThru -WorkingDirectory $global:IoaFolderLocation -WindowStyle Hidden -FilePath $executableLocation -ArgumentList $executableArguments).Id
+                Register-RestartListener -IoaExeEngineName $executableLocation -IoaFolderPath $global:IoaFolderLocation -EventsFilePath $domainControllerEventLogFileLocation -FileWriteIntervalInSeconds $ioaFileWriteFrequencyInSeconds -StartedProcessId $startedProcessPid -AuditPath $auditPath -AdminName $administratorName -PdcName $pdcName -DomainName $domainName -DomainControllerDnsName $domainControllerDnsName -GptTmplInfPath $gptTmplInfPath -RegistryPolPath $registryPolPath
+            } catch {
+                Write-Error $_.Exception
+            }
+        }
+    }
+
+    function Get-InterSitesReplicationIntervalMinutes {
+        param(
+        [Parameter(Mandatory = $true)]
+        [Object[]]
+        $Output,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $SourceSiteDn,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $DestinationSiteDn
+        )
+
+        $lines = ($Output | Select-String -Pattern """$SourceSiteDn""" | Select-String -Pattern """$DestinationSiteDn""")
+        If ($lines.Length -le 0 -Or -Not($lines[0].Line.EndsWith("""):"""))) {
+            return 15
+        }
+
+        Write-Host """[-] Connection found in showism output:"""
+        Write-Host $lines[0]
+
+        return ($lines[0].Line.Split(' '))[-1].Split(')')[0]
+    }
+
+    function Register-RestartListener {
+        param(
+        [Parameter(Mandatory = $true)]
+        [String]
+        $IoaExeEngineName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $IoaFolderPath,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $EventsFilePath,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $AuditPath,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $AdminName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $PdcName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $DomainName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $DomainControllerDnsName,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $GptTmplInfPath,
+        [Parameter(Mandatory = $true)]
+        [String]
+        $RegistryPolPath,
+        [Parameter(Mandatory = $true)]
+        [Int]
+        $FileWriteIntervalInSeconds,
+        [Parameter(Mandatory = $true)]
+        [Int]
+        $StartedProcessId,
+        [Parameter(Mandatory = $false)]
+        [Int]
+        $WmiTriggerPeriodInSec = 600
+        )
+
+        # Remove old WMI consumer
+        $FilterParams = @{
+            'Namespace' = 'root\subscription'
+            'Class' = '__EventFilter'
+            'Filter' = """Name = 'AlsidForAD-Launcher'"""
+        }
+        $filter = Get-WmiObject @FilterParams -ErrorAction SilentlyContinue | Remove-WmiObject -ErrorAction SilentlyContinue
+        Write-Host """[-] Existing WMI filter AlsidForAD-Launcher removed"""
+        $ConsumerParams = @{
+            'Namespace' = 'root\subscription'
+            'Class' = 'ActiveScriptEventConsumer'
+            'Filter' = """Name = 'AlsidForAD-Launcher'"""
+        }
+        $consumer = Get-WmiObject @ConsumerParams -ErrorAction SilentlyContinue | Remove-WmiObject -ErrorAction SilentlyContinue
+        Write-Host """[-] Existing WMI consumer AlsidForAD-Launcher removed"""
+        Get-WmiObject -Class '__FilterToConsumerBinding' -Namespace 'root\subscription' -Filter """Filter = """"""__EventFilter.name='AlsidForAD-Launcher'""""""""" | Remove-WmiObject -ErrorAction SilentlyContinue
+        Write-Host """[-] Existing WMI binding AlsidForAD-Launcher removed"""
+
+        # Kill running IOA engines
+        Get-WmiObject Win32_Process -Filter """name = 'powershell.exe'""" | Where-Object { ($_.CommandLine -match """alsid""" -Or $_.CommandLine -match """Register-TenableADWMIListener""") -And $_.ProcessId -ne $pid -And $_.ProcessId -ne $StartedProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+        Get-WmiObject Win32_Process -Filter """name = 'Register-TenableADEventsListener.exe'""" | Where-Object { $_.ProcessId -ne $pid -And $_.ProcessId -ne $StartedProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+
+        # Register new WMI consumer
+        $LauncherFilterQuery = """Select * From __InstanceModificationEvent Within $WmiTriggerPeriodInSec Where Targetinstance ISA 'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime &gt;= 300 AND TargetInstance.SystemUpTime &lt; 37800"""
+
+        $WmiLauncherFilterParams = @{
+            'Class'     = '__EventFilter'
+            'Namespace' = 'root\subscription'
+            'Arguments' = @{ Name = 'AlsidForAD-Launcher'; EventNameSpace = 'root\cimv2'; QueryLanguage = 'WQL'; Query = $LauncherFilterQuery }
+        }
+        $WmiLauncherEventFilterPath = Set-WmiInstance @WmiLauncherFilterParams -ErrorAction Stop
+        Write-Host """[-] WMI filter AlsidforAD-Launcher registered"""
+
+        $command = """Start-Process -WorkingDirectory '$IoaFolderPath' -WindowStyle Hidden -FilePath '$IoaExeEngineName' -ArgumentList @('-t','$FileWriteIntervalInSeconds','-p','$EventsFilePath','-g','-w','-f','""""""$AuditPath""""""','-a','$AdminName','-i','$PdcName','-y','$domainName','-z','$domainControllerDnsName','-x','""""""$GptTmplInfPath""""""','-l','""""""$RegistryPolPath""""""')"""
+        $bytes = [System.Text.Encoding]::Unicode.GetBytes($command)
+        $encodedCommand = [Convert]::ToBase64String($bytes)
+
+        $LauncherEventConsumerArgs = @{
+            Name = 'AlsidForAD-Launcher'
+            ScriptingEngine = 'VBScript'
+            ScriptText = '
+            Dim fso, objShell, psCmdLine, encodedPwCommand
+            Set fso = CreateObject("""Scripting.FileSystemObject""")
+            Set objShell = CreateObject("""Wscript.shell""")
+            ioaEnginePath = """' + $IoaExeEngineName + '"""
+            encodedPwCommand = """' + $encodedCommand + '"""
+            psCmdLine = """powershell.exe -encodedCommand """ + encodedPwCommand
+
+            Function IsAlsidIoaRunning
+                Set objWMIService = GetObject("""winmgmts:\\.\root\cimv2""")
+                Set colItems = objWMIService.ExecQuery ("""Select * from Win32_Process Where Name = """ &amp; Chr(39) &amp; """Register-TenableADEventsListener.exe""" &amp; Chr(39))
+                For Each objItem in colItems
+                    IsAlsidIoaRunning = true
+                    Exit Function
+                Next
+                IsAlsidIoaRunning = false
+            End Function
+
+            If fso.FileExists(ioaEnginePath) Then
+                If (IsAlsidIoaRunning() = false) Then
+                    objShell.run psCmdLine, 0
+                End If
+            End If
+            '
+        }
+        $WmiLauncherConsumerParams = @{
+          Namespace = 'root/subscription'
+          Class = 'ActiveScriptEventConsumer'
+          Arguments = $LauncherEventConsumerArgs
+        }
+        $WmiLauncherConsumer = Set-WmiInstance @WmiLauncherConsumerParams -ErrorAction Stop
+        Write-Host """[-] WMI consumer AlsidforAD-Launcher registered"""
+
+        $WmiLauncherFilterConsumerParams = @{
+          'Class'     = '__FilterToConsumerBinding'
+          'Namespace' = 'root\subscription'
+          'Arguments' = @{ Filter = $WmiLauncherEventFilterPath; Consumer = $WmiLauncherConsumer }
+        }
+        Set-WmiInstance @WmiLauncherFilterConsumerParams -ErrorAction Stop | Out-Null
+        Write-Host """[-] WMI binding AlsidforAD-Launcher registered"""
+    }
+
+    function Generate-AuditCsv {
+        process {
+            try {
+                # Create the audit.csv with Tenable.ad required logging settings
+
+                $AuditCSV = @'
+Machine Name,Policy Target,Subcategory,Subcategory GUID,Inclusion Setting,Exclusion Setting,Setting Value
+,System,Audit Logoff,{0cce9216-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit Sensitive Privilege Use,{0CCE9228-69AE-11D9-BED3-505054503030},Success and Failure,,3
+,System,Audit Logon,{0cce9215-69ae-11d9-bed3-505054503030},Success and Failure,,3
+,System,Audit Process Termination,{0CCE922C-69AE-11D9-BED3-505054503030},Success,,1
+,System,Audit Kerberos Service Ticket Operations,{0cce9240-69ae-11d9-bed3-505054503030},Success and Failure,,3
+,System,Audit Kerberos Authentication Service,{0cce9242-69ae-11d9-bed3-505054503030},Success and Failure,,3
+,System,Audit Handle Manipulation,{0cce9223-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit Other Object Access Events,{0cce9227-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit SAM,{0cce9220-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit Detailed File Share,{0cce9244-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit Process Creation,{0CCE922B-69AE-11D9-BED3-505054503030},Success,,1
+,System,Audit Credential Validation,{0cce923f-69ae-11d9-bed3-505054503030},Success and Failure,,3
+,System,Audit Security Group Management,{0cce9237-69ae-11d9-bed3-505054503030},Success,,1
+,System,Audit Application Generated,{0CCE9222-69AE-11D9-BED3-505054503030},Success,,1
+,System,Audit Directory Service Access,{0cce923b-69ae-11d9-bed3-505054503030},Success,,1
+'@
+
+                If (!(Test-Path -Path $global:TemporaryTaskFolderLocation)) {
+                    New-Item -ItemType Directory -Path $global:TemporaryTaskFolderLocation -ErrorAction Stop | Out-Null
+                    Write-Host """[-] Temporary folder $global:TemporaryTaskFolderLocation created"""
+                }
+                $RsopFilePath = $global:TemporaryTaskFolderLocation + 'rsop.xml'
+
+                Write-Host """[-] Generating RSoP file at $RsopFilePath"""
+                gpresult.exe /SCOPE COMPUTER /X $RsopFilePath
+                If (!(Test-Path $RsopFilePath)) {
+                    Write-Host """[-] Generating RSoP file at $RsopFilePath failed"""
+                    $administratorSid = (Get-ADDomain).DomainSID.Value + "-500"
+                    $administrator = Get-ADUser -Identity $administratorSid
+                    $administratorName = $administrator.SamAccountName
+                    Write-Host """[-] Generating RSoP file at $RsopFilePath for $administratorName"""
+                    gpresult.exe /SCOPE COMPUTER /X $RsopFilePath /USER $administratorName
+                    If (!(Test-Path $RsopFilePath)) {
+                        Write-Host """[-] RSoP file was not generated"""
+                        throw """RSoP file generation failed"""
+                    }
+                }
+                Write-Host """[-] RSoP file generated at $RsopFilePath"""
+
+                $Audit = $AuditCSV | ConvertFrom-Csv
+                $AuditC = @()
+                $AuditC += $Audit
+                Write-Host """[-] Needed audit policies converted from csv format"""
+
+                [xml]$Xml = Get-Content -Path $RsopFilePath
+                Write-Host """[-] Generated RSoP output:"""
+                Write-Host $Xml.OuterXml
+                $AdvAuditPolicies = $Xml.Rsop.ComputerResults.ExtensionData | where-object { $_.Name.'#text' -Match """Advanced Audit Configuration""" }
+                $Rsop = $AdvAuditPolicies | Select-Object -ExpandProperty Extension | Select-Object -ErrorAction SilentlyContinue -ExpandProperty AuditSetting | Select-Object -Property SubcategoryGuid, SettingValue, SubcategoryName
+                If ($Null -eq $Rsop) {
+                    $Rsop = @()
+                }
+                Write-Host """[-] Advanced audit policies extracted from generated file:"""
+                Write-Host $AdvAuditPolicies.OuterXml
+                Write-Host """[-] RSoP extracted from generated file:"""
+                $joinedRsop = $Rsop | Foreach {$_.SubcategoryGuid + ' (' + $_.SubcategoryName + '): ' + $_.SettingValue}
+                Write-Host ($joinedRsop -join ',')
+
+                # Getting effective audit policy settings currently in use
+                auditpol.exe /backup /file:"""$($global:TempAuditCsvFileLocation)"""
+                Write-Host """[-] Auditpol output generated at $global:TempAuditCsvFileLocation"""
+                $auditBackupContent = Get-Content -Path $global:TempAuditCsvFileLocation | Where-Object { $_.trim() -ne """""" }
+                $Header = 'Machine Name', 'Policy Target', 'Subcategory', 'Subcategory GUID', 'Inclusion Setting', 'Exclusion Setting', 'Setting Value'
+                $auditBackupContent = $auditBackupContent[1..($auditBackupContent.count - 1)]
+                $SubCat = $auditBackupContent | ConvertFrom-Csv -Header $Header
+                $SubCatC  = @()
+                $SubCatC  += $SubCat
+                Write-Host """[-] Auditpol output extracted and converted"""
+
+                # Merging our **advanced** settings ($AuditC) with potential already existing ($Rsop) if ours risk masking them
+                foreach ($v in $AuditC) {
+                    $subGuid = $v.'Subcategory GUID'
+                    $subName = $v.'Subcategory'
+
+                    $existingValue = $SubCatC  | where-object { $_.'Subcategory GUID' -match $subGuid } | Select-Object -First 1
+
+                    If ($Null -eq $existingValue) {
+                        Write-Host """[-] No value found in auditpol output for $subName ($subGuid)"""
+                        continue
+                    }
+
+                    # Checking if there is currently a setting that blocks something we need
+                    If ($existingValue.'Setting Value' -eq 0 -or $existingValue.'Setting Value' -eq 4) {
+                        $RsopValue = $Rsop | where-object { $_.SubcategoryGuid -match $subGuid } | Select-Object -First 1
+                        If ($Null -eq $RsopValue) {
+                            Write-Host """[-] No value found in RSoP output for $subName ($subGuid)"""
+                            continue
+                        }
+                        If ($RsopValue.SettingValue -eq 0 -or $RsopValue.SettingValue -eq 4) {
+                            $SubcategoryError = 'Tenable.ad requires the audit policy ' + $subName + ' but the current AD configuration prevents its usage'
+                            throw $SubcategoryError
+                        }
+                    }
+
+                    If ($existingValue.'Setting Value' -eq $v.'Setting Value') {
+                        Write-Host """[-] Value found in auditpol output is the one needed for $subName ($subGuid)"""
+                        continue
+                    }
+
+                    Write-Host """[-] Setting value found in auditpol output to Success and Failure for $subName ($subGuid)"""
+                    $v.'Setting Value' = 3
+                }
+
+                # Converting existing basic configuration (not needed) to advanced one
+                If (($Null -eq $AdvAuditPolicies) -Or ($AdvAuditPolicies.Extension.ChildNodes.Count -eq 0)) {
+                    Write-Host """[-] Trying to convert existing basic audit policies to advanced ones"""
+                    $basicAuditPoliciesToMigrate = """Machine Name,Policy Target,Subcategory,Subcategory GUID,Inclusion Setting,Exclusion Setting,Setting Value""" + """
+"""
+                    foreach ($auditPoliciesSubCategory in $SubCatC ) {
+                        If ($auditPoliciesSubCategory.'Subcategory GUID' -ne '' -And (-Not (($auditPoliciesSubCategory.'Setting Value' -eq 0) -Or ($auditPoliciesSubCategory.'Setting Value' -eq 4)))) {
+                            $notNeededRsopValue = $AuditC | where-object { $_.'Subcategory GUID' -match $auditPoliciesSubCategory.'Subcategory GUID' } | Select-Object -First 1
+                            If ($Null -eq $notNeededRsopValue) {
+                                $auditPoliciesSubCategoryGuid = $auditPoliciesSubCategory.'Subcategory GUID'
+                                $auditPoliciesSubCategoryName = $auditPoliciesSubCategory.'Subcategory'
+                                $auditPoliciesSubCategoryValue = $auditPoliciesSubCategory.'Setting Value'
+                                Write-Host """[-] Existing audit policy $auditPoliciesSubCategoryName ($auditPoliciesSubCategoryGuid) value will be set to $auditPoliciesSubCategoryValue like previously"""
+                                $newBasicSetting = $auditPoliciesSubCategory.'Machine Name' + """,""" + $auditPoliciesSubCategory.'Policy Target' + """,Audit """ + $auditPoliciesSubCategory.Subcategory + """,""" + $auditPoliciesSubCategory.'Subcategory GUID' + """,""" + $auditPoliciesSubCategory.'Inclusion Setting' + """,""" + $auditPoliciesSubCategory.'Exclusion Setting' + """,""" + $auditPoliciesSubCategory.'Setting Value'
+                                $basicAuditPoliciesToMigrate = $basicAuditPoliciesToMigrate + $newBasicSetting + """
+"""
+                            }
+                        }
+                    }
+                    $customCsv = $basicAuditPoliciesToMigrate | ConvertFrom-Csv
+                    $CsvC = @()
+                    $CsvC += $customCsv
+                    $AuditC += $CsvC
+                }
+
+                $AuditCSV = $AuditC | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_.replace('"""', '') }
+                $AuditCSV | Set-Content -Encoding UTF8 -Path $global:AuditCSVPath -ErrorAction Stop
+                Write-Host """[-] Generated audit policies to be deployed: $AuditCSV"""
+
+                # Clean task temporary folder
+                Remove-Item -Recurse -Force $global:TemporaryTaskFolderLocation -ErrorAction SilentlyContinue | Out-Null
+                Write-Host """[-] Temporary folder $global:TemporaryTaskFolderLocation cleaned"""
+            }
+            catch {
+                Write-Error $_.Exception
+            }
+        }
+    }
+
+    function Protect-IoaFolder {
+        try {
+            $ioaFolderAcl = Get-Acl -Path $global:IoaFolderLocation
+            $ioaFolderAcl.SetAccessRuleProtection($True, $True)
+            Set-Acl -Path $global:IoaFolderLocation -AclObject $ioaFolderAcl
+            Write-Host """[-] Inheritance removed for directory $global:IoaFolderLocation"""
+            $ioaFolderAcl = Get-Acl -Path $global:IoaFolderLocation
+            $ioaFolderAclAccessRules = $ioaFolderAcl.GetAccessRules($True, $True, [System.Security.Principal.SecurityIdentifier])
+            ForEach ($acl in $ioaFolderAclAccessRules) {
+                $aclIdentitySid = $acl.IdentityReference.Value
+                If ($aclIdentitySid -eq 'S-1-5-11') {
+                    $Null = $ioaFolderAcl.RemoveAccessRule($acl)
+                    Write-Host '[-] Authenticated users group removed from IOA folder ACLs'
+                }
+            }
+            $tenableAccount = New-Object System.Security.Principal.NTAccount('dcadmin')
+            $tenableAccountSid = $tenableAccount.Translate([System.Security.Principal.SecurityIdentifier])
+            $tenableAccountSidValue = $tenableAccountSid.Value
+            $tenableAccountValue = $tenableAccount.Value
+            $ruleReadWrite = New-Object System.Security.AccessControl.FileSystemAccessRule($tenableAccountSid, 'ReadAndExecute, Synchronize, Write', 'ContainerInherit, ObjectInherit', 'None', 'Allow')
+            $ioaFolderAcl.AddAccessRule($ruleReadWrite)
+            Write-Host """[-] Tenable.ad service account ($tenableAccountSidValue : $tenableAccountValue) ACL set for IOA folder"""
+            Set-Acl -Path $global:IoaFolderLocation -AclObject $ioaFolderAcl
+            Write-Host """[-] Right permissions set to IOA folder"""
+        } catch {
+            Write-Error $_.Exception
+        }
+    }
+
+    function Clean-OldTasks {
+        try {
+            $tenableTasks = Get-ScheduledTask | Where-Object { $_.TaskName.StartsWith("""TenableADTask""") -Or $_.TaskName.StartsWith("""TenableADCleaningTask""") -Or $_.TaskName.StartsWith("""AlsidTask""") -Or $_.TaskName.StartsWith("""AlsidCleaningTask""") }
+        } catch {
+            Write-Host """[-] Get-ScheduledTask cmdlet is missing from this system, cannot clean old task"""
+            return
+        }
+
+        If($tenableTasks.Count -gt 1){
+            $oldtenableTasks = $tenableTasks | Get-ScheduledTaskInfo | Sort-Object LastRunTime -Descending | Select-Object -Skip 1
+            foreach ($task in $oldtenableTasks) {
+                $taskName = $task.TaskName
+                Unregister-ScheduledTask -TaskName $taskName -Confirm:$False
+                Write-Host """[-] Old task $taskName cleaned"""
+            }
+        }
+    }
+
+    function Clean-OldGpo {
+        Write-Host """[-] Old GPO folder $global:OldGpoFolder will be cleaned"""
+        $cleanCommand = """Start-Sleep 10; If(Test-Path '$global:OldGpoFolder') { Remove-Item '$global:OldGpoFolder' -Recurse -Force }"""
+        $bytes = [System.Text.Encoding]::Unicode.GetBytes($cleanCommand)
+        $cleanEncodedCommand = [Convert]::ToBase64String($bytes)
+        Start-Process powershell.exe -ArgumentList @("""-noprofile""", """-executionpolicy""", """bypass""", """-encodedCommand""", $cleanEncodedCommand)
+    }
+
+    try {
+
+        # Replication may occur after current immediate task is performed
+        # Because immediate task may be pulled directly from another domain controller when a gpupdate happens
+        # As we need the SYSVOL folders associated to our GPO replicated to the local domain controller before starting our process
+        # We must wait for GPO to be replicated before performing this immediated task (24 hours maximum)
+        For ($i = 1; $i -le 288; $i++) {
+
+            If ($i -gt 1) {
+                Start-Sleep 300
+            }
+
+            If(Test-Path $global:GptIniLocation) {
+                break
+            }
+
+            If ($i -eq 288) {
+                Exit
+            }
+        }
+
+        $LogfilePrefix = """TenableTranscript_"""
+        Remove-Item $($envTemp + '\' + $LogfilePrefix + '*') -ErrorAction SilentlyContinue
+
+        $Logfile = $LogfilePrefix + $global:EnvMachineName + '_' + [guid]::NewGuid() + '.log'
+        $TranscriptsFolder = $global:IoaFolderLocation + '\transcripts'
+        If($PSVersionTable.PSVersion.Major -ge 5)
+        {
+            Start-Transcript -Path $($TranscriptsFolder + '\' + $Logfile) -IncludeInvocationHeader
+            Start-Transcript -Path $($envTemp + '\' + $Logfile) -IncludeInvocationHeader
+        }
+        Else
+        {
+            # cannot Start-Transcript twice on older versions
+            Start-Transcript -Path $($TranscriptsFolder + '\' + $Logfile)
+        }
+
+        Write-Host """[-] Starting script version v3.40.0-alpha.21, occurrence 0"""
+
+        Write-Host """[-] Starting immediate task on DC $global:EnvMachineName"""
+        Write-Host """[-] Domain controller DNS name: $global:LocalDomainControllerDNSName"""
+        Write-Host """[-] Primary domain controller: $global:PrimaryDomainControllerFilter"""
+        Write-Host """[-] Primary domain controller site: $global:PrimaryDomainControllerSite"""
+        Write-Host """[-] Current domain controller site: $global:LocalDomainControllerSite"""
+        Write-Host """[-] Audit policies folder: $global:AuditPath"""
+        Write-Host """[-] Temporary folder: $global:TemporaryTaskFolderLocation"""
+        Write-Host """[-] IOA folder location: $global:IoaFolderLocation"""
+
+        # Cast to string for 2008R2
+        If ($True) {
+            Write-Host """[-] File audit.csv will be generated by the listener"""
+        } ElseIf (!(Test-Path $global:AuditCSVPath) -Or ((Get-Content $global:AuditCSVPath) -eq $NULL)) {
+            Write-Host """[-] Generating audit.csv on first domain controller $global:EnvMachineName"""
+            Generate-AuditCsv
+            Write-Host """[-] Running gpupdate /force"""
+            Invoke-Command -ScriptBlock { gpupdate /force }
+        } Else {
+            Write-Host """[-] File audit.csv already exists"""
+        }
+        Protect-IoaFolder
+        Register-Channels
+        Register-EventListener
+        Clean-OldTasks
+        If($global:DeleteOldGpo) {
+            Clean-OldGpo
+        }
+    }
+    catch {
+        Write-Error $_.Exception
+    }
+    finally {
+        Write-Host """[+] All done!
+"""
+        Stop-Transcript
+        If($PSVersionTable.PSVersion.Major -ge 5)
+        {
+            # we started two transcripts, so we stop twice
+            Stop-Transcript
+        }
+    }})</q1:Arguments>
+                  </q1:Exec>
+                </q1:Actions>
+              </q1:Task>
+              <q1:Values />
+              <q1:Attributes />
+              <q1:Members />
+            </q1:INSTANCE>
+            <q1:Values />
+            <q1:Attributes />
+            <q1:Members />
+          </q1:BaseInstanceXml>
+        </q1:ScheduledTasksRsopSetting>
+      </Extension>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Settings">Scheduled Tasks</Name>
+    </ExtensionData>
+    <ExtensionData>
+      <Extension xmlns:q2="http://www.microsoft.com/GroupPolicy/Settings/Security" xsi:type="q2:SecuritySettings" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeMachineAccountPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Authenticated Users</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeChangeNotifyPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Everyone</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">LOCAL SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NETWORK SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Authenticated Users</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Pre-Windows 2000 Compatible Access</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeIncreaseBasePriorityPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Window Manager\Window Manager Group</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeTakeOwnershipPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeRestorePrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Backup Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeDebugPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeSystemTimePrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">LOCAL SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeSecurityPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeShutdownPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Backup Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Print Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeAuditPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">LOCAL SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NETWORK SERVICE</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeInteractiveLogonRight</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Backup Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Account Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Print Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">ENTERPRISE DOMAIN CONTROLLERS</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeCreatePagefilePrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeBatchLogonRight</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Backup Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Performance Log Users</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeNetworkLogonRight</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Everyone</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Authenticated Users</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">ENTERPRISE DOMAIN CONTROLLERS</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Pre-Windows 2000 Compatible Access</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeSystemProfilePrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NT SERVICE\WdiServiceHost</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeRemoteShutdownPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeBackupPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Backup Operators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Server Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeEnableDelegationPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeUndockPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeSystemEnvironmentPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeLoadDriverPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Print Operators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeIncreaseQuotaPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">LOCAL SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NETWORK SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeProfileSingleProcessPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">Administrators</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:UserRightsAssignment>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:Name>SeAssignPrimaryTokenPrivilege</q2:Name>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">LOCAL SERVICE</Name>
+          </q2:Member>
+          <q2:Member>
+            <Name xmlns="http://www.microsoft.com/GroupPolicy/Types">NETWORK SERVICE</Name>
+          </q2:Member>
+        </q2:UserRightsAssignment>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Services\NTDS\Parameters\LDAPServerIntegrity</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Domain controller: LDAP server signing requirements</q2:Name>
+            <q2:Units />
+            <q2:DisplayString>None</q2:DisplayString>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\RequireSecuritySignature</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Microsoft network server: Digitally sign communications (always)</q2:Name>
+            <q2:Units />
+            <q2:DisplayBoolean>true</q2:DisplayBoolean>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\EnableSecuritySignature</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Microsoft network server: Digitally sign communications (if client agrees)</q2:Name>
+            <q2:Units />
+            <q2:DisplayBoolean>true</q2:DisplayBoolean>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{31B2F340-016D-11D2-945F-00C04FB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Control\Lsa\NoLMHash</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Network security: Do not store LAN Manager hash value on next password change</q2:Name>
+            <q2:Units />
+            <q2:DisplayBoolean>true</q2:DisplayBoolean>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{EF253028-09B7-4F00-9B7B-C2B470398B00}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Control\Lsa\SCENoApplyLegacyAuditPolicy</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Audit: Force audit policy subcategory settings (Windows Vista or later) to override audit policy category settings</q2:Name>
+            <q2:Units />
+            <q2:DisplayBoolean>true</q2:DisplayBoolean>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:SecurityOptions>
+          <GPO xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">
+            <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{6AC1786C-016F-11D2-945F-00C04fB984F9}</Identifier>
+            <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">alsid.corp</Domain>
+          </GPO>
+          <Precedence xmlns="http://www.microsoft.com/GroupPolicy/Settings/Base">1</Precedence>
+          <q2:KeyName>MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\RequireSignOrSeal</q2:KeyName>
+          <q2:SettingNumber>1</q2:SettingNumber>
+          <q2:Display>
+            <q2:Name>Domain member: Digitally encrypt or sign secure channel data (always)</q2:Name>
+            <q2:Units />
+            <q2:DisplayBoolean>true</q2:DisplayBoolean>
+          </q2:Display>
+        </q2:SecurityOptions>
+        <q2:Blocked>false</q2:Blocked>
+      </Extension>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Settings">Security</Name>
+    </ExtensionData>
+    <ExtensionData>
+      <Extension xmlns:q3="http://www.microsoft.com/GroupPolicy/Settings/Security" xsi:type="q3:SecuritySettings" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+        <q3:Blocked>true</q3:Blocked>
+      </Extension>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Settings">Security (Setting controlled by a different authority)</Name>
+    </ExtensionData>
+    <ExtensionData>
+      <Extension xmlns:q4="http://www.microsoft.com/GroupPolicy/Settings/Registry" xsi:type="q4:RegistrySettings" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+        <q4:Blocked>false</q4:Blocked>
+      </Extension>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Settings">Registry</Name>
+    </ExtensionData>
+    <ExtensionData>
+      <Extension xmlns:q5="http://www.microsoft.com/GroupPolicy/Settings/Registry" xsi:type="q5:RegistrySettings" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+        <q5:Blocked>true</q5:Blocked>
+      </Extension>
+      <Name xmlns="http://www.microsoft.com/GroupPolicy/Settings">Registry (Setting controlled by a different authority)</Name>
+    </ExtensionData>
+    <EventsDetails>
+      <SinglePassEventsDetails ActivityId="{0030d7e8-9daf-4f89-ba66-83fecd449fbb}" ProcessingTrigger="Manual" ProcessingAppMode="Background" LinkSpeedInKbps="428463" SlowLinkThresholdInKbps="500" DomainControllerName="qasaas-afad-dc1.alsid.corp" DomainControllerIPAddress="10.100.0.10" PolicyProcessingMode="None" PolicyElapsedTimeInMilliseconds="2178" ErrorCount="0" WarningCount="0">
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4004&lt;/EventID&gt;&lt;Version&gt;1&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;1&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.424451700Z'/&gt;&lt;EventRecordID&gt;615295&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PolicyActivityId'&gt;{0030d7e8-9daf-4f89-ba66-83fecd449fbb}&lt;/Data&gt;&lt;Data Name='PrincipalSamName'&gt;ALSID\QASAAS-AFAD-DC1$&lt;/Data&gt;&lt;Data Name='IsMachine'&gt;1&lt;/Data&gt;&lt;Data Name='IsDomainJoined'&gt;true&lt;/Data&gt;&lt;Data Name='IsBackgroundProcessing'&gt;true&lt;/Data&gt;&lt;Data Name='IsAsyncProcessing'&gt;false&lt;/Data&gt;&lt;Data Name='IsServiceRestart'&gt;false&lt;/Data&gt;&lt;Data Name='ReasonForSyncProcessing'&gt;0&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Starting manual processing of policy for computer ALSID\QASAAS-AFAD-DC1$. 
+Activity id: {0030d7e8-9daf-4f89-ba66-83fecd449fbb}</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5340&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.425299300Z'/&gt;&lt;EventRecordID&gt;615296&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PolicyApplicationMode'&gt;0&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The Group Policy processing mode is Background.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.425570500Z'/&gt;&lt;EventRecordID&gt;615297&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4114&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Attempting to retrieve the account information.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.425573200Z'/&gt;&lt;EventRecordID&gt;615298&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationDescription'&gt;%%4117&lt;/Data&gt;&lt;Data Name='Parameter'&gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Making system call to get account information. 
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.428221500Z'/&gt;&lt;EventRecordID&gt;615299&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationElaspedTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='OperationDescription'&gt;%%4118&lt;/Data&gt;&lt;Data Name='Parameter'&gt;CN=QASAAS-AFAD-DC1,OU=Domain Controllers,DC=alsid,DC=corp&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The system call to get account information completed. 
+CN=QASAAS-AFAD-DC1,OU=Domain Controllers,DC=alsid,DC=corp
+The call completed in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.428223200Z'/&gt;&lt;EventRecordID&gt;615300&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4115&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Retrieved account information.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4326&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.428317400Z'/&gt;&lt;EventRecordID&gt;615301&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Group Policy is trying to discover the Domain Controller information.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.428318400Z'/&gt;&lt;EventRecordID&gt;615302&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4096&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Retrieving Domain Controller details.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.430169100Z'/&gt;&lt;EventRecordID&gt;615303&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationDescription'&gt;%%4119&lt;/Data&gt;&lt;Data Name='Parameter'&gt;qasaas-afad-dc1.alsid.corp&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Making LDAP calls to connect and bind to Active Directory. 
+qasaas-afad-dc1.alsid.corp</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.432121400Z'/&gt;&lt;EventRecordID&gt;615304&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationElaspedTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='OperationDescription'&gt;%%4120&lt;/Data&gt;&lt;Data Name='Parameter'&gt;qasaas-afad-dc1.alsid.corp&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The LDAP call to connect and bind to Active Directory completed. 
+qasaas-afad-dc1.alsid.corp
+The call completed in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5308&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.432125200Z'/&gt;&lt;EventRecordID&gt;615305&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='DCName'&gt;qasaas-afad-dc1.alsid.corp&lt;/Data&gt;&lt;Data Name='DCIPAddress'&gt;10.100.0.10&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Domain Controller details: 
+	Domain Controller Name : qasaas-afad-dc1.alsid.corp
+	Domain Controller IP Address : 10.100.0.10</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5326&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.432126300Z'/&gt;&lt;EventRecordID&gt;615306&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='DCDiscoveryTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Group Policy successfully discovered the Domain Controller in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5309&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.432908800Z'/&gt;&lt;EventRecordID&gt;615307&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='MachineRole'&gt;3&lt;/Data&gt;&lt;Data Name='NetworkName'&gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Computer details: 
+	Computer role : 3
+	Network name : </EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5310&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.432911100Z'/&gt;&lt;EventRecordID&gt;615308&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PrincipalCNName'&gt;CN=QASAAS-AFAD-DC1,OU=Domain Controllers,DC=alsid,DC=corp&lt;/Data&gt;&lt;Data Name='PrincipalDomainName'&gt;alsid.corp&lt;/Data&gt;&lt;Data Name='DCName'&gt;\\qasaas-afad-dc1.alsid.corp&lt;/Data&gt;&lt;Data Name='DCDomainName'&gt;alsid.corp&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Account details: 
+	Account Name : CN=QASAAS-AFAD-DC1,OU=Domain Controllers,DC=alsid,DC=corp
+	Account Domain Name : alsid.corp
+	DC Name : \\qasaas-afad-dc1.alsid.corp
+	DC Domain Name : alsid.corp</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5311&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.437678900Z'/&gt;&lt;EventRecordID&gt;615309&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PolicyProcessingMode'&gt;0&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The loopback policy processing mode is "No loopback mode".</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4126&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.437680600Z'/&gt;&lt;EventRecordID&gt;615310&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='IsMachine'&gt;true&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Group Policy receiving applicable GPOs from the domain controller.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4257&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.438988700Z'/&gt;&lt;EventRecordID&gt;615311&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='IsMachine'&gt;true&lt;/Data&gt;&lt;Data Name='IsBackgroundProcessing'&gt;true&lt;/Data&gt;&lt;Data Name='IsAsyncProcessing'&gt;true&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Starting to download policies.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5327&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.531427000Z'/&gt;&lt;EventRecordID&gt;615312&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='NetworkBandwidthInKbps'&gt;0&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Estimated network bandwidth on one of the connections: 0 kbps.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5314&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.534206900Z'/&gt;&lt;EventRecordID&gt;615313&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='BandwidthInkbps'&gt;428463&lt;/Data&gt;&lt;Data Name='IsSlowLink'&gt;false&lt;/Data&gt;&lt;Data Name='ThresholdInkbps'&gt;500&lt;/Data&gt;&lt;Data Name='PolicyApplicationMode'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='LinkDescription'&gt;%%4113&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>A fast link was detected. The Estimated bandwidth is 428463 kbps. The slow link threshold is 500 kbps.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.534258600Z'/&gt;&lt;EventRecordID&gt;615314&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationDescription'&gt;%%4131&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{EF253028-09B7-4F00-9B7B-C2B470398B00}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Making system calls to access specified file. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{EF253028-09B7-4F00-9B7B-C2B470398B00}\gpt.ini</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.536125000Z'/&gt;&lt;EventRecordID&gt;615315&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationElaspedTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='OperationDescription'&gt;%%4132&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{EF253028-09B7-4F00-9B7B-C2B470398B00}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The system calls to access specified file completed. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{EF253028-09B7-4F00-9B7B-C2B470398B00}\gpt.ini
+The call completed in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.536194900Z'/&gt;&lt;EventRecordID&gt;615316&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationDescription'&gt;%%4131&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Making system calls to access specified file. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}\gpt.ini</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.537781100Z'/&gt;&lt;EventRecordID&gt;615317&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationElaspedTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='OperationDescription'&gt;%%4132&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The system calls to access specified file completed. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}\gpt.ini
+The call completed in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.537834400Z'/&gt;&lt;EventRecordID&gt;615318&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationDescription'&gt;%%4131&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Making system calls to access specified file. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\gpt.ini</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5017&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.539360500Z'/&gt;&lt;EventRecordID&gt;615319&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='OperationElaspedTimeInMilliSeconds'&gt;0&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='OperationDescription'&gt;%%4132&lt;/Data&gt;&lt;Data Name='Parameter'&gt;\\alsid.corp\sysvol\alsid.corp\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\gpt.ini&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The system calls to access specified file completed. 
+\\alsid.corp\sysvol\alsid.corp\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\gpt.ini
+The call completed in 0 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5257&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.539389600Z'/&gt;&lt;EventRecordID&gt;615320&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='IsMachine'&gt;true&lt;/Data&gt;&lt;Data Name='PolicyDownloadTimeElapsedInMilliseconds'&gt;94&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Successfully completed downloading policies.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5126&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.539726500Z'/&gt;&lt;EventRecordID&gt;615321&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='IsMachine'&gt;true&lt;/Data&gt;&lt;Data Name='IsBackgroundProcessing'&gt;true&lt;/Data&gt;&lt;Data Name='IsAsyncProcessing'&gt;false&lt;/Data&gt;&lt;Data Name='NumberOfGPOsDownloaded'&gt;3&lt;/Data&gt;&lt;Data Name='NumberOfGPOsApplicable'&gt;0&lt;/Data&gt;&lt;Data Name='GPODownloadTimeElapsedInMilliseconds'&gt;94&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Group Policy successfully got applicable GPOs from the domain controller.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5312&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.540162400Z'/&gt;&lt;EventRecordID&gt;615322&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='DescriptionString'&gt;Default Domain Policy
+Default Domain Controllers Policy
+Tenable.ad
+&lt;/Data&gt;&lt;Data Name='GPOInfoList'&gt;&amp;lt;GPO ID="{31B2F340-016D-11D2-945F-00C04FB984F9}"&amp;gt;&amp;lt;Name&amp;gt;Default Domain Policy&amp;lt;/Name&amp;gt;&amp;lt;Version&amp;gt;131074&amp;lt;/Version&amp;gt;&amp;lt;SOM&amp;gt;LDAP://DC=alsid,DC=corp&amp;lt;/SOM&amp;gt;&amp;lt;FSPath&amp;gt;\\alsid.corp\sysvol\alsid.corp\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}\Machine&amp;lt;/FSPath&amp;gt;&amp;lt;Extensions&amp;gt;[{827D319E-6EAC-11D2-A4EA-00C04F79F83A}{803E14A0-B4FB-11D0-A0D0-00A0C90F574B}]&amp;lt;/Extensions&amp;gt;&amp;lt;/GPO&amp;gt;&amp;lt;GPO ID="{6AC1786C-016F-11D2-945F-00C04fB984F9}"&amp;gt;&amp;lt;Name&amp;gt;Default Domain Controllers Policy&amp;lt;/Name&amp;gt;&amp;lt;Version&amp;gt;65537&amp;lt;/Version&amp;gt;&amp;lt;SOM&amp;gt;LDAP://OU=Domain Controllers,DC=alsid,DC=corp&amp;lt;/SOM&amp;gt;&amp;lt;FSPath&amp;gt;\\alsid.corp\sysvol\alsid.corp\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\Machine&amp;lt;/FSPath&amp;gt;&amp;lt;Extensions&amp;gt;[{827D319E-6EAC-11D2-A4EA-00C04F79F83A}{803E14A0-B4FB-11D0-A0D0-00A0C90F574B}]&amp;lt;/Extensions&amp;gt;&amp;lt;/GPO&amp;gt;&amp;lt;GPO ID="{EF253028-09B7-4F00-9B7B-C2B470398B00}"&amp;gt;&amp;lt;Name&amp;gt;Tenable.ad&amp;lt;/Name&amp;gt;&amp;lt;Version&amp;gt;65537&amp;lt;/Version&amp;gt;&amp;lt;SOM&amp;gt;LDAP://OU=Domain Controllers,DC=alsid,DC=corp&amp;lt;/SOM&amp;gt;&amp;lt;FSPath&amp;gt;\\alsid.corp\sysvol\alsid.corp\Policies\{EF253028-09B7-4F00-9B7B-C2B470398B00}\Machine&amp;lt;/FSPath&amp;gt;&amp;lt;Extensions&amp;gt;[{00000000-0000-0000-0000-000000000000}{CAB54552-DEEA-4691-817E-ED4A4D1AFC72}][{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}][{827D319E-6EAC-11D2-A4EA-00C04F79F83A}{803E14A0-B4FB-11D0-A0D0-00A0C90F574B}][{AADCED64-746C-4633-A97C-D61349046527}{CAB54552-DEEA-4691-817E-ED4A4D1AFC72}]&amp;lt;/Extensions&amp;gt;&amp;lt;/GPO&amp;gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>List of applicable Group Policy objects: 
+
+Default Domain Policy
+Default Domain Controllers Policy
+Tenable.ad
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5313&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.540185600Z'/&gt;&lt;EventRecordID&gt;615323&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='DescriptionString'&gt;Local Group Policy
+	Not Applied (Empty)
+&lt;/Data&gt;&lt;Data Name='GPOInfoList'&gt;&amp;lt;GPO ID="Local Group Policy"&amp;gt;&amp;lt;Name&amp;gt;Local Group Policy&amp;lt;/Name&amp;gt;&amp;lt;Version&amp;gt;0&amp;lt;/Version&amp;gt;&amp;lt;SOM&amp;gt;Local&amp;lt;/SOM&amp;gt;&amp;lt;FSPath&amp;gt;C:\Windows\System32\GroupPolicy\Machine&amp;lt;/FSPath&amp;gt;&amp;lt;Reason&amp;gt;NOTAPPLIED-EMPTY&amp;lt;/Reason&amp;gt;&amp;lt;/GPO&amp;gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The following Group Policy objects were not applicable because they were filtered out : 
+
+Local Group Policy
+	Not Applied (Empty)
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.558457100Z'/&gt;&lt;EventRecordID&gt;615324&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4161&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Checking for Group Policy client extensions that are not part of the system.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.558583700Z'/&gt;&lt;EventRecordID&gt;615325&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4163&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Service configuration update to standalone is not required and will be skipped.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5320&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.558584500Z'/&gt;&lt;EventRecordID&gt;615326&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='InfoDescription'&gt;%%4165&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Finished checking for non-system extensions.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;1&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.558997400Z'/&gt;&lt;EventRecordID&gt;615327&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEExtensionId'&gt;{35378eac-683f-11d2-a89a-00c04fbbcfa2}&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Registry&lt;/Data&gt;&lt;Data Name='IsExtensionAsyncProcessing'&gt;false&lt;/Data&gt;&lt;Data Name='IsGPOListChanged'&gt;true&lt;/Data&gt;&lt;Data Name='GPOListStatusString'&gt;%%4102&lt;/Data&gt;&lt;Data Name='DescriptionString'&gt;Tenable.ad
+&lt;/Data&gt;&lt;Data Name='ApplicableGPOList'&gt;&amp;lt;GPO ID="{EF253028-09B7-4F00-9B7B-C2B470398B00}"&amp;gt;&amp;lt;Name&amp;gt;Tenable.ad&amp;lt;/Name&amp;gt;&amp;lt;/GPO&amp;gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Starting Registry Extension Processing. 
+
+List of applicable Group Policy objects: (Changes were detected.)
+
+Tenable.ad
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;2&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.567993800Z'/&gt;&lt;EventRecordID&gt;615328&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEElaspedTimeInMilliSeconds'&gt;15&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Registry&lt;/Data&gt;&lt;Data Name='CSEExtensionId'&gt;{35378eac-683f-11d2-a89a-00c04fbbcfa2}&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Completed Registry Extension Processing in 15 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;1&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:45.579156900Z'/&gt;&lt;EventRecordID&gt;615329&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEExtensionId'&gt;{827d319e-6eac-11d2-a4ea-00c04f79f83a}&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Security&lt;/Data&gt;&lt;Data Name='IsExtensionAsyncProcessing'&gt;true&lt;/Data&gt;&lt;Data Name='IsGPOListChanged'&gt;true&lt;/Data&gt;&lt;Data Name='GPOListStatusString'&gt;%%4102&lt;/Data&gt;&lt;Data Name='DescriptionString'&gt;Default Domain Policy
+Default Domain Controllers Policy
+Tenable.ad
+&lt;/Data&gt;&lt;Data Name='ApplicableGPOList'&gt;&amp;lt;GPO ID="{31B2F340-016D-11D2-945F-00C04FB984F9}"&amp;gt;&amp;lt;Name&amp;gt;Default Domain Policy&amp;lt;/Name&amp;gt;&amp;lt;/GPO&amp;gt;&amp;lt;GPO ID="{6AC1786C-016F-11D2-945F-00C04fB984F9}"&amp;gt;&amp;lt;Name&amp;gt;Default Domain Controllers Policy&amp;lt;/Name&amp;gt;&amp;lt;/GPO&amp;gt;&amp;lt;GPO ID="{EF253028-09B7-4F00-9B7B-C2B470398B00}"&amp;gt;&amp;lt;Name&amp;gt;Tenable.ad&amp;lt;/Name&amp;gt;&amp;lt;/GPO&amp;gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Starting Security Extension Processing. 
+
+List of applicable Group Policy objects: (Changes were detected.)
+
+Default Domain Policy
+Default Domain Controllers Policy
+Tenable.ad
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;2&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:46.391318100Z'/&gt;&lt;EventRecordID&gt;615330&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEElaspedTimeInMilliSeconds'&gt;797&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Security&lt;/Data&gt;&lt;Data Name='CSEExtensionId'&gt;{827d319e-6eac-11d2-a4ea-00c04f79f83a}&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Completed Security Extension Processing in 797 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;4016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;1&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:46.396814000Z'/&gt;&lt;EventRecordID&gt;615331&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEExtensionId'&gt;{aadced64-746c-4633-a97c-d61349046527}&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Group Policy Scheduled Tasks&lt;/Data&gt;&lt;Data Name='IsExtensionAsyncProcessing'&gt;true&lt;/Data&gt;&lt;Data Name='IsGPOListChanged'&gt;true&lt;/Data&gt;&lt;Data Name='GPOListStatusString'&gt;%%4102&lt;/Data&gt;&lt;Data Name='DescriptionString'&gt;Tenable.ad
+&lt;/Data&gt;&lt;Data Name='ApplicableGPOList'&gt;&amp;lt;GPO ID="{EF253028-09B7-4F00-9B7B-C2B470398B00}"&amp;gt;&amp;lt;Name&amp;gt;Tenable.ad&amp;lt;/Name&amp;gt;&amp;lt;/GPO&amp;gt;&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Starting Group Policy Scheduled Tasks Extension Processing. 
+
+List of applicable Group Policy objects: (Changes were detected.)
+
+Tenable.ad
+</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5016&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;2&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:47.586742300Z'/&gt;&lt;EventRecordID&gt;615332&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='CSEElaspedTimeInMilliSeconds'&gt;1187&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='CSEExtensionName'&gt;Group Policy Scheduled Tasks&lt;/Data&gt;&lt;Data Name='CSEExtensionId'&gt;{aadced64-746c-4633-a97c-d61349046527}&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Completed Group Policy Scheduled Tasks Extension Processing in 1187 milliseconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;1502&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;1&lt;/Opcode&gt;&lt;Keywords&gt;0x8000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:47.600156600Z'/&gt;&lt;EventRecordID&gt;38914&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;System&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='SupportInfo1'&gt;1&lt;/Data&gt;&lt;Data Name='SupportInfo2'&gt;4213&lt;/Data&gt;&lt;Data Name='ProcessingMode'&gt;0&lt;/Data&gt;&lt;Data Name='ProcessingTimeInMilliseconds'&gt;2156&lt;/Data&gt;&lt;Data Name='DCName'&gt;\\qasaas-afad-dc1.alsid.corp&lt;/Data&gt;&lt;Data Name='NumberOfGroupPolicyObjects'&gt;3&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>The Group Policy settings for the computer were processed successfully. New settings from 3 Group Policy objects were detected and applied.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;8004&lt;/EventID&gt;&lt;Version&gt;1&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;2&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:47.602960900Z'/&gt;&lt;EventRecordID&gt;615333&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PolicyElaspedTimeInSeconds'&gt;2&lt;/Data&gt;&lt;Data Name='ErrorCode'&gt;0&lt;/Data&gt;&lt;Data Name='PrincipalSamName'&gt;ALSID\QASAAS-AFAD-DC1$&lt;/Data&gt;&lt;Data Name='IsMachine'&gt;1&lt;/Data&gt;&lt;Data Name='IsConnectivityFailure'&gt;false&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Completed manual processing of policy for computer ALSID\QASAAS-AFAD-DC1$ in 2 seconds.</EventDescription>
+        </EventRecord>
+        <EventRecord>
+          <EventXml>&lt;Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'&gt;&lt;System&gt;&lt;Provider Name='Microsoft-Windows-GroupPolicy' Guid='{aea1b4fa-97d1-45f2-a64c-4d69fffd92c9}'/&gt;&lt;EventID&gt;5315&lt;/EventID&gt;&lt;Version&gt;0&lt;/Version&gt;&lt;Level&gt;4&lt;/Level&gt;&lt;Task&gt;0&lt;/Task&gt;&lt;Opcode&gt;0&lt;/Opcode&gt;&lt;Keywords&gt;0x4000000000000000&lt;/Keywords&gt;&lt;TimeCreated SystemTime='2023-02-06T08:58:47.607363700Z'/&gt;&lt;EventRecordID&gt;615334&lt;/EventRecordID&gt;&lt;Correlation ActivityID='{0030d7e8-9daf-4f89-ba66-83fecd449fbb}'/&gt;&lt;Execution ProcessID='1508' ThreadID='664'/&gt;&lt;Channel&gt;Microsoft-Windows-GroupPolicy/Operational&lt;/Channel&gt;&lt;Computer&gt;qasaas-afad-dc1.alsid.corp&lt;/Computer&gt;&lt;Security UserID='S-1-5-18'/&gt;&lt;/System&gt;&lt;EventData&gt;&lt;Data Name='PrincipalSamName'&gt;ALSID\QASAAS-AFAD-DC1$&lt;/Data&gt;&lt;Data Name='NextPolicyApplicationTime'&gt;5&lt;/Data&gt;&lt;Data Name='NextPolicyApplicationTimeUnit'&gt;%%4100&lt;/Data&gt;&lt;/EventData&gt;&lt;/Event&gt;</EventXml>
+          <EventDescription>Next policy processing for ALSID\QASAAS-AFAD-DC1$ will be attempted in 5 minutes.</EventDescription>
+        </EventRecord>
+        <ExtensionProcessingTime>
+          <ExtensionName>Registry</ExtensionName>
+          <ExtensionGuid>{35378eac-683f-11d2-a89a-00c04fbbcfa2}</ExtensionGuid>
+          <ElapsedTimeInMilliseconds>15</ElapsedTimeInMilliseconds>
+          <ProcessedTimeStamp>2023-02-06T08:58:45.5679938+00:00</ProcessedTimeStamp>
+        </ExtensionProcessingTime>
+        <ExtensionProcessingTime>
+          <ExtensionName>Security</ExtensionName>
+          <ExtensionGuid>{827d319e-6eac-11d2-a4ea-00c04f79f83a}</ExtensionGuid>
+          <ElapsedTimeInMilliseconds>797</ElapsedTimeInMilliseconds>
+          <ProcessedTimeStamp>2023-02-06T08:58:46.3913181+00:00</ProcessedTimeStamp>
+        </ExtensionProcessingTime>
+        <ExtensionProcessingTime>
+          <ExtensionName>Group Policy Scheduled Tasks</ExtensionName>
+          <ExtensionGuid>{aadced64-746c-4633-a97c-d61349046527}</ExtensionGuid>
+          <ElapsedTimeInMilliseconds>1187</ElapsedTimeInMilliseconds>
+          <ProcessedTimeStamp>2023-02-06T08:58:47.5867423+00:00</ProcessedTimeStamp>
+        </ExtensionProcessingTime>
+        <ExtensionProcessingTime>
+          <ExtensionName>Group Policy Infrastructure</ExtensionName>
+          <ExtensionGuid>{00000000-0000-0000-0000-000000000000}</ExtensionGuid>
+          <ElapsedTimeInMilliseconds>179</ElapsedTimeInMilliseconds>
+          <ProcessedTimeStamp>2023-02-06T08:58:47.6029609+00:00</ProcessedTimeStamp>
+        </ExtensionProcessingTime>
+      </SinglePassEventsDetails>
+    </EventsDetails>
+  </ComputerResults>
+</Rsop>
