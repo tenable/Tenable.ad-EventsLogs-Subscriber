@@ -7,8 +7,11 @@ use winreg::RegKey;
 
 pub const DEFAULT_CHANNELS: [&str; 3] = ["Security", "Application", "System"];
 
-fn is_default_channel(channel_name: &str) -> bool {
-    DEFAULT_CHANNELS.contains(&&channel_name[..])
+pub fn is_default_channel(channel_name: &str) -> bool {
+    DEFAULT_CHANNELS
+        .iter()
+        .find(|c| c.to_lowercase() == channel_name.to_lowercase())
+        .is_some()
 }
 
 const WINDOWS_SERVER_2022_BUILD: u32 = 20348;
@@ -20,13 +23,8 @@ const WINDOWS_SERVER_2022_BUILD: u32 = 20348;
 /// not needed. Otherwise, `Err()` is returned if an error occurred.
 pub fn try_activate_and_refresh_channel_cache(
     channel: &str,
-    preview: bool,
     current_build_number: Option<u32>,
 ) -> anyhow::Result<bool> {
-    if !preview {
-        return Ok(false);
-    }
-
     if is_default_channel(channel) {
         info!("Channel '{channel}' is default one");
         return Ok(false);
@@ -47,7 +45,7 @@ pub fn try_activate_and_refresh_channel_cache(
             // Here, we continue the process (even though we don't know the actual build number of
             // the current machine), because:
             // - this value should exist on all Windows versions up to 2022 at least, so if it does
-            //   not exist anymore it probably indicate that it is a future version that has moved
+            //   not exist anymore it probably indicates that it is a future version that has moved
             //   or removed it
             // - otherwise, if it does not exist for another reason (if someone has been tempering
             //   with its registry for instance) then there is no major issue to perform these
@@ -357,27 +355,10 @@ mod tests {
         use super::*;
 
         #[test]
-        fn it_should_return_ok_false_while_in_preview() {
-            // Act
-            let result = try_activate_and_refresh_channel_cache(
-                "test",
-                false,
-                Some(WINDOWS_SERVER_2022_BUILD),
-            );
-
-            // Assert
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), false);
-        }
-
-        #[test]
         fn it_should_return_ok_false_for_a_default_channel() {
             // Act
-            let result = try_activate_and_refresh_channel_cache(
-                "Security",
-                true,
-                Some(WINDOWS_SERVER_2022_BUILD),
-            );
+            let result =
+                try_activate_and_refresh_channel_cache("Security", Some(WINDOWS_SERVER_2022_BUILD));
 
             // Assert
             assert!(result.is_ok());
@@ -387,11 +368,8 @@ mod tests {
         #[test]
         fn it_should_return_ok_false_for_a_build_prior_to_win_server_2022() {
             // Act
-            let result = try_activate_and_refresh_channel_cache(
-                "test",
-                true,
-                Some(WINDOWS_SERVER_2022_BUILD - 1),
-            );
+            let result =
+                try_activate_and_refresh_channel_cache("test", Some(WINDOWS_SERVER_2022_BUILD - 1));
 
             // Assert
             assert!(result.is_ok());
@@ -401,11 +379,8 @@ mod tests {
         #[test]
         fn it_should_return_ok_true_when_all_prerequisties_are_valid() {
             // Act
-            let result = try_activate_and_refresh_channel_cache(
-                "test",
-                true,
-                Some(WINDOWS_SERVER_2022_BUILD),
-            );
+            let result =
+                try_activate_and_refresh_channel_cache("test", Some(WINDOWS_SERVER_2022_BUILD));
 
             // Assert
             assert!(result.is_ok());
