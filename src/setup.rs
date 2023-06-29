@@ -1,22 +1,31 @@
 use crate::{
     build_xml_query,
     channel::{is_default_channel, try_activate_and_refresh_channel_cache, DEFAULT_CHANNELS},
-    Arguments, EventLog, EventsLogsConfiguration, PREVIEW,
+    Arguments, EventLog, EventsLogsConfiguration, EMPTY_STRING, PREVIEW,
 };
 use log::{error, info, warn};
 use minidom::{Element, NSChoice};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    ffi::OsStr,
+    ffi::{c_void, OsStr},
     fs::File,
     io::{Read, Write},
     path::{Path, PathBuf},
     ptr::null_mut,
+    slice::from_raw_parts,
 };
 use tempfile::TempDir;
+use uuid::Uuid;
+use windows::core::GUID;
 use windows::Win32::{
-    Foundation::{GetLastError, ERROR_EVT_CHANNEL_NOT_FOUND, ERROR_EVT_INVALID_QUERY, WIN32_ERROR},
+    Foundation::{
+        GetLastError, BOOLEAN, ERROR_EVT_CHANNEL_NOT_FOUND, ERROR_EVT_INVALID_QUERY, WIN32_ERROR,
+    },
+    Security::Authentication::Identity::{
+        AuditEnumerateCategories, AuditEnumerateSubCategories, AuditFree, AuditQuerySystemPolicy,
+        AUDIT_POLICY_INFORMATION,
+    },
     System::EventLog::{EvtClose, EvtSubscribe, EVT_SUBSCRIBE_CALLBACK},
 };
 use winreg::{
@@ -198,7 +207,7 @@ pub fn generate_registry_pol(
             final_reg_value,
         }) = get_registry_policy(pol_value)
         {
-            get_powershell_output(format!(
+            get_powershell_output_lossy(format!(
                 "Set-GPRegistryValue \
                     -Name Tenable.ad \
                     -Key '{reg_path}' \
@@ -292,15 +301,10 @@ pub fn subscribe_to_channels(
     configuration_file_json: &EventsLogsConfiguration,
     subscribed_channels: &mut HashMap<String, isize>,
 ) {
-    let channel_keys = if unsafe { PREVIEW } {
-        let channel_keys = get_channel_keys();
-        if let Err(ref err) = channel_keys {
-            error!("An error occurred while trying to read the channel keys: {err}");
-        }
-        channel_keys
-    } else {
-        Err(anyhow::anyhow!("Preview mode has no channel keys"))
-    };
+    let channel_keys = get_channel_keys();
+    if let Err(ref err) = channel_keys {
+        error!("An error occurred while trying to read the channel keys: {err}");
+    }
 
     let channels = build_channels(&configuration_file_json.channels);
     for channel in channels {
@@ -314,10 +318,6 @@ pub fn subscribe_to_channels(
             callback,
             current_build_number,
         );
-
-        if unsafe { !PREVIEW } {
-            continue;
-        }
 
         if let Ok(subscription_handle) = subscription_result {
             subscribed_channels.insert(channel, subscription_handle);
@@ -622,19 +622,34 @@ fn generate_audit_csv_file(
 
     info!("RSoP extracted from generated file");
 
-    let audit_csv_temp_file_path = temporary_task_folder.path().join("audit.csv");
-    let audit_csv_temp_file_path_name = audit_csv_temp_file_path.to_string_lossy();
+    let auditpol: Vec<AuditCsvLine>;
 
-    run_command(format!(
-        "auditpol.exe /backup /file:\"{audit_csv_temp_file_path_name}\""
-    ))?;
+    match unsafe { PREVIEW } {
+        true => {
+            info!("Current applied subcategories audit policies generated with Windows APIs");
 
-    info!("Auditpol outpout generated at {audit_csv_temp_file_path_name}");
+            auditpol = get_current_applied_audit_policies()?;
 
-    let auditpol = read_as_utf8_string(audit_csv_temp_file_path)?;
-    let auditpol = get_audit_csv_data(auditpol)?;
+            info!("Current applied subcategories audit policies extracted");
+        }
+        false => {
+            info!("Current applied subcategories audit policies generated with auditpol");
 
-    info!("Auditpol output extracted and converted");
+            let audit_csv_temp_file_path = temporary_task_folder.path().join("audit.csv");
+            let audit_csv_temp_file_path_name = audit_csv_temp_file_path.to_string_lossy();
+
+            run_command(format!(
+                "auditpol.exe /backup /file:\"{audit_csv_temp_file_path_name}\""
+            ))?;
+
+            info!("Auditpol outpout generated at {audit_csv_temp_file_path_name}");
+
+            let auditpol_string = read_as_utf8_string(audit_csv_temp_file_path)?;
+            auditpol = get_audit_csv_data(auditpol_string)?;
+
+            info!("Auditpol output extracted and converted");
+        }
+    }
 
     let mut new_audit_csv = vec![];
     for audit_config in audit_csv.iter() {
@@ -644,7 +659,9 @@ fn generate_audit_csv_file(
         let auditpol_value = match auditpol.iter().find(|a| a.subcategory_guid == sub_guid) {
             Some(v) => v,
             None => {
-                info!("No value found in auditpol output for {sub_name} ({sub_guid})");
+                info!(
+                    "No value found in current audit policies output for {sub_name} ({sub_guid})"
+                );
                 new_audit_csv.push(audit_config.clone());
                 continue;
             }
@@ -670,19 +687,19 @@ fn generate_audit_csv_file(
 
         // TODO: The fix below should be applied once the current behavior is validated
         // if auditpol_value.setting_value == Some(0) || auditpol_value.setting_value == Some(4) {
-        //     info!("Value found in auditpol output can be overriden for {sub_name} ({sub_guid})");
+        //     info!("Value found in current audit policies output can be overriden for {sub_name} ({sub_guid})");
         //     new_audit_csv.push(audit_config.clone());
         //     continue;
         // }
 
         if auditpol_value.setting_value == audit_config.setting_value {
-            info!("Value found in auditpol output is the one needed for {sub_name} ({sub_guid})");
+            info!("Value found in current audit policies output is the one needed for {sub_name} ({sub_guid})");
             new_audit_csv.push(audit_config.clone());
             continue;
         }
 
         info!(
-            "Setting value found in auditpol output to Success and Failure \
+            "Setting value found in current audit policies output to Success and Failure \
             for {sub_name} ({sub_guid})"
         );
         let mut audit_config = audit_config.clone();
@@ -763,7 +780,7 @@ struct AuditCsvLine {
     #[serde(rename = "Exclusion Setting")]
     exclusion_setting: String,
     #[serde(rename = "Setting Value")]
-    setting_value: Option<u8>,
+    setting_value: Option<u32>,
 }
 
 fn to_lowercase<'de, D>(deserializer: D) -> Result<String, D::Error>
@@ -783,6 +800,139 @@ fn get_audit_csv_data(audit_csv: String) -> anyhow::Result<Vec<AuditCsvLine>> {
         result.push(line);
     }
     Ok(result)
+}
+
+fn get_current_applied_audit_policies() -> anyhow::Result<Vec<AuditCsvLine>> {
+    let retrieve_all_sub_categories = BOOLEAN(0);
+    let computer_name = std::env::var("ComputerName");
+    let extracted_machine_name = match computer_name.to_owned() {
+        Ok(s) => s,
+        Err(_) => EMPTY_STRING.to_string(),
+    };
+    let mut pdw_count_returned: u32 = 0;
+    let mut pp_audit_categories_array: *mut GUID = null_mut();
+
+    let mut applied_audit_policies_sub_categories = vec![];
+    let mut applied_audit_policies_sub_categories_content = EMPTY_STRING.to_string();
+
+    unsafe {
+        if AuditEnumerateCategories(
+            &mut pp_audit_categories_array as *mut *mut GUID,
+            &mut pdw_count_returned as *mut u32,
+        )
+        .0 == 0
+        {
+            let status = GetLastError();
+            error!("Audit policies categories enumeration failed ({status:?})");
+            return Err(anyhow::anyhow!(
+                "Audit policies categories enumeration failed"
+            ));
+        }
+
+        let sliced_categories_guids =
+            from_raw_parts(pp_audit_categories_array, pdw_count_returned as usize);
+
+        for p_audit_category_guid in sliced_categories_guids {
+            let cat_uuid = Uuid::from_fields(
+                p_audit_category_guid.data1,
+                p_audit_category_guid.data2,
+                p_audit_category_guid.data3,
+                &p_audit_category_guid.data4,
+            );
+
+            let mut pp_audit_sub_categories_array: *mut GUID = null_mut();
+            if AuditEnumerateSubCategories(
+                p_audit_category_guid as *const GUID,
+                retrieve_all_sub_categories,
+                &mut pp_audit_sub_categories_array as *mut *mut GUID,
+                &mut pdw_count_returned as *mut u32,
+            )
+            .0 == 0
+            {
+                let status = GetLastError();
+                error!(
+                    "Audit policies subcategories enumeration failed for category {cat_uuid} ({status:?})"
+                );
+                continue;
+            }
+
+            let sliced_sub_categories_guids =
+                from_raw_parts(pp_audit_sub_categories_array, pdw_count_returned as usize);
+
+            let mut pp_audit_sub_categories_information_array: *mut AUDIT_POLICY_INFORMATION =
+                null_mut();
+            if AuditQuerySystemPolicy(
+                sliced_sub_categories_guids,
+                &mut pp_audit_sub_categories_information_array
+                    as *mut *mut AUDIT_POLICY_INFORMATION,
+            )
+            .0 == 0
+            {
+                let status = GetLastError();
+                error!(
+                    "Audit policies subcategories system policies query failed for category {cat_uuid} ({status:?})"
+                );
+                AuditFree(pp_audit_sub_categories_array as *const c_void);
+                continue;
+            }
+
+            let sliced_sub_categories_informations = from_raw_parts(
+                pp_audit_sub_categories_information_array,
+                sliced_sub_categories_guids.len(),
+            );
+
+            for audit_sub_category_information in sliced_sub_categories_informations {
+                let sub_cat_guid = audit_sub_category_information.AuditSubCategoryGuid;
+                let sub_cat_uuid = Uuid::from_fields(
+                    sub_cat_guid.data1,
+                    sub_cat_guid.data2,
+                    sub_cat_guid.data3,
+                    &sub_cat_guid.data4,
+                );
+
+                let existing_audit_policy = AuditCsvLine {
+                    machine_name: extracted_machine_name.clone(),
+                    policy_target: "System".to_string(),
+                    subcategory: EMPTY_STRING.to_string(),
+                    subcategory_guid: format!("{{{}}}", sub_cat_uuid.to_string()),
+                    inclusion_setting: EMPTY_STRING.to_string(),
+                    exclusion_setting: EMPTY_STRING.to_string(),
+                    setting_value: Some(audit_sub_category_information.AuditingInformation),
+                };
+
+                applied_audit_policies_sub_categories.push(existing_audit_policy.clone());
+                applied_audit_policies_sub_categories_content = format!(
+                    "{}{}",
+                    applied_audit_policies_sub_categories_content,
+                    format!(
+                        "{},{},{},{},{},{},{:?}\r\n",
+                        existing_audit_policy.machine_name,
+                        existing_audit_policy.policy_target,
+                        existing_audit_policy.subcategory,
+                        existing_audit_policy.subcategory_guid,
+                        existing_audit_policy.inclusion_setting,
+                        existing_audit_policy.exclusion_setting,
+                        match existing_audit_policy.setting_value {
+                            Some(s) => s,
+                            None => 10, // Abnormal value to pinpoint issue during previous query
+                        },
+                    )
+                );
+            }
+
+            AuditFree(pp_audit_sub_categories_information_array as *const c_void);
+            AuditFree(pp_audit_sub_categories_array as *const c_void);
+        }
+
+        AuditFree(pp_audit_categories_array as *const c_void);
+    };
+
+    info!(
+        "Current applied subcategories audit policies content\r\n{}",
+        applied_audit_policies_sub_categories_content
+    );
+
+    return Ok(applied_audit_policies_sub_categories);
 }
 
 pub fn run_command<S>(command: S) -> anyhow::Result<()>
@@ -820,26 +970,76 @@ fn get_gpresult_xml(
     temporary_task_folder: &TempDir,
     administrator_name: &str,
 ) -> anyhow::Result<Element> {
+    match get_gpresult_xml_for_user(temporary_task_folder, None) {
+        Ok(xml) => return Ok(xml),
+        Err(err) => error!("RSoP file was not generated for current user: {err}"),
+    };
+
+    match get_gpresult_xml_for_user(temporary_task_folder, Some(administrator_name)) {
+        Ok(xml) => return Ok(xml),
+        Err(err) => error!("RSoP file was not generated for {administrator_name}: {err}"),
+    };
+
+    let rsop_admins = get_powershell_output(
+        "Invoke-WmiMethod \
+            -Class RsopLoggingModeProvider \
+            -Name RsopEnumerateUsers \
+            -Namespace Root\\RSOP \
+        | Select \
+            -ExpandProperty userSids \
+        | Get-ADUser \
+        | % { $_.SamAccountName }",
+    )?;
+
+    let rsop_admins = rsop_admins
+        .lines()
+        .map(|n| n.trim())
+        .filter(|n| !n.is_empty() && *n != administrator_name);
+
+    for rsop_admin in rsop_admins {
+        match get_gpresult_xml_for_user(temporary_task_folder, Some(rsop_admin)) {
+            Ok(xml) => return Ok(xml),
+            Err(err) => error!("RSoP file was not generated for {rsop_admin}: {err}"),
+        };
+    }
+
+    Err(anyhow::anyhow!(
+        "RSoP file generation failed after several attempts"
+    ))
+}
+
+fn get_gpresult_xml_for_user(
+    temporary_task_folder: &TempDir,
+    user_name: Option<&str>,
+) -> anyhow::Result<Element> {
     let rsop_file_path = temporary_task_folder.path().join("rsop.xml");
     let rsop_file_path_name = rsop_file_path.to_string_lossy();
 
+    if rsop_file_path.exists() {
+        info!("Removing file at {rsop_file_path_name}");
+        std::fs::remove_file(&rsop_file_path)?;
+    }
+
     info!("Generating RSoP file at {rsop_file_path_name}");
 
-    run_command(format!(
-        "gpresult.exe /SCOPE COMPUTER /X {rsop_file_path_name}"
-    ))?;
+    match user_name {
+        None => {
+            info!("Generating RSoP file at {rsop_file_path_name} for current user");
+            run_command(format!(
+                "gpresult.exe /SCOPE COMPUTER /X {rsop_file_path_name}"
+            ))?;
+        }
+        Some(user_name) => {
+            info!("Generating RSoP file at {rsop_file_path_name} for {user_name}");
+            run_command(format!(
+                "gpresult.exe /SCOPE COMPUTER /X {rsop_file_path_name} /USER {user_name}"
+            ))?;
+        }
+    }
 
     if !rsop_file_path.exists() {
         info!("Generating RSoP file at {rsop_file_path_name} failed");
-        info!("Generating RSoP file at {rsop_file_path_name} for {administrator_name}");
-        run_command(format!(
-            "gpresult.exe /SCOPE COMPUTER /X {rsop_file_path_name} /USER {administrator_name}"
-        ))?;
-
-        if !rsop_file_path.exists() {
-            info!("RSoP file was not generated");
-            return Err(anyhow::anyhow!("RSoP file generation failed"));
-        }
+        return Err(anyhow::anyhow!("RSoP file generation failed"));
     }
 
     info!("RSoP file generated at {rsop_file_path_name}");
@@ -912,6 +1112,29 @@ where
     Ok(stdout)
 }
 
+fn get_powershell_output_lossy<S>(command: S) -> anyhow::Result<String>
+where
+    S: AsRef<OsStr>,
+    S: std::fmt::Display,
+{
+    info!("Run powershell command:\r\n{command}");
+
+    let output = std::process::Command::new("PowerShell")
+        .arg(command)
+        .output()?;
+
+    if !output.status.success() {
+        let error = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow::anyhow!(error.to_string()));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+
+    info!("Output of the command:\r\n{stdout}");
+
+    Ok(stdout)
+}
+
 #[cfg(test)]
 mod tests {
     use std::ffi::c_void;
@@ -929,7 +1152,7 @@ mod tests {
         use super::empty_callback;
         use crate::{
             setup::{handle_file_changes, FileChanged},
-            Arguments, EventLog, EventsLogsConfiguration, PREVIEW,
+            Arguments, EventLog, EventsLogsConfiguration,
         };
         use std::{collections::HashMap, io::Write, num::NonZeroU8};
         use windows::Win32::System::EventLog::EVT_SUBSCRIBE_CALLBACK;
@@ -956,9 +1179,6 @@ mod tests {
         #[test]
         fn with_empty_subscribed_channel_handles_should_feed_with_default_and_resquested_channels()
         {
-            // Arrange
-            unsafe { PREVIEW = true };
-
             // Create a temporary file for test config.
             let mut tmp_file = tempfile::NamedTempFile::new()
                 .expect("Unable to create temporary file for the test.");
@@ -1019,9 +1239,6 @@ mod tests {
         #[test]
         fn with_populated_subscribed_channel_handles_should_clear_then_feed_with_default_and_resquested_channels(
         ) {
-            // Arrange
-            unsafe { PREVIEW = true };
-
             // Create a temporary file for test config.
             let mut tmp_file = tempfile::NamedTempFile::new()
                 .expect("Unable to create temporary file for the test.");
@@ -1083,9 +1300,6 @@ mod tests {
 
         #[test]
         fn when_new_config_is_equivalent_to_current_should_discard_and_do_nothing() {
-            // Arrange
-            unsafe { PREVIEW = true };
-
             // Create a temporary file for test config.
             let mut tmp_file = tempfile::NamedTempFile::new()
                 .expect("Unable to create temporary file for the test.");
@@ -1158,9 +1372,6 @@ mod tests {
 
         #[test]
         fn when_new_config_is_different_from_current_should_apply_it_and_store_new_config() {
-            // Arrange
-            unsafe { PREVIEW = true };
-
             // Create a temporary file for test config.
             let mut tmp_file = tempfile::NamedTempFile::new()
                 .expect("Unable to create temporary file for the test.");
@@ -1283,11 +1494,47 @@ mod tests {
     }
 
     mod generate_audit_csv {
+        use std::env::temp_dir;
+
+        use crate::setup::{
+            get_audit_csv_data, get_current_applied_audit_policies, read_as_utf8_string,
+            run_command, AuditCsvLine,
+        };
+
         #[test]
         fn it_should_parse_the_rsop_xml_file() {
             let rsop_xml = include_str!("../data/rsop.xml");
             let result = rsop_xml.parse::<minidom::Element>();
             assert!(result.is_ok());
+        }
+
+        #[test]
+        fn it_should_generate_same_output_windows_apis_vs_auditpol() {
+            let audit_csv_temp_file_path = temp_dir().as_path().join("audit.csv");
+            let audit_csv_temp_file_path_name = audit_csv_temp_file_path.to_string_lossy();
+
+            _ = run_command(format!(
+                "auditpol.exe /backup /file:\"{audit_csv_temp_file_path_name}\""
+            ));
+
+            let auditpol_string = read_as_utf8_string(audit_csv_temp_file_path);
+            let auditpol_output: Vec<AuditCsvLine> = get_audit_csv_data(auditpol_string.unwrap())
+                .unwrap()
+                .into_iter()
+                .filter(|v| v.subcategory_guid != "")
+                .collect();
+
+            let audit_policies_windows_apis = get_current_applied_audit_policies().unwrap();
+
+            assert!(audit_policies_windows_apis.len() == auditpol_output.len());
+
+            let check_all_vec_values = audit_policies_windows_apis.iter().all(|f| {
+                auditpol_output
+                    .iter()
+                    .any(|g| g.subcategory_guid == f.subcategory_guid)
+            });
+
+            assert!(check_all_vec_values);
         }
     }
 }

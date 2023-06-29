@@ -1,27 +1,28 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, Local, Utc};
 use clap::Parser;
 use core::ffi::c_void;
+use env_logger::{Builder, Target};
 use flate2::{write::GzEncoder, Compression};
+use gag::BufferRedirect;
 use gethostname::gethostname;
-use log::{error, info, warn};
+use log::{error, info, warn, LevelFilter};
 use memory_stats::memory_stats;
 use minidom::Element;
 use notify::{Error, Event, ReadDirectoryChangesWatcher, Result as NotifyResult, Watcher};
 use serde::Deserialize;
-use simplelog::*;
 use state::Storage;
 use std::{
     collections::{HashMap, HashSet},
     env::{current_dir, temp_dir, VarError},
     ffi::OsString,
     fs::{self, create_dir},
-    io::Write,
+    io::{Read, Write},
     num::NonZeroU8,
     os::windows::prelude::OpenOptionsExt,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{
         mpsc::{channel, Receiver, Sender, TryRecvError},
         Mutex,
@@ -61,7 +62,6 @@ const TIME_CREATED: &str = "TimeCreated";
 const EVENT_LOGS_COUNT_LEAP: u32 = 1000; // Event logs counter leap to wait
 const DEFAULT_CONFIGURATION_FILE_PATH: &str = "./TenableADEventsListenerConfiguration.json";
 
-const TEN_MILLIS: StdTimeDuration = StdTimeDuration::from_millis(10);
 const ONE_MINUTE: StdTimeDuration = StdTimeDuration::from_secs(60);
 
 // Define insertion string list delimiter
@@ -77,6 +77,7 @@ static mut SLEEP_DURATION: StdTimeDuration = StdTimeDuration::ZERO; // Duration 
 static mut PREVIEW: bool = false; // Enable or disable preview features
 static mut EVENT_LOGS_COUNT: u32 = 0; // Event logs counter
 static BUFFER: Storage<Mutex<Vec<u8>>> = Storage::new(); // Buffer to store event logs momentarily
+static LOG_BUFFER: Storage<Mutex<BufferRedirect>> = Storage::new(); // Buffer to store logs momentarily
 
 #[derive(Deserialize, PartialEq, Eq, Hash)]
 pub struct EventLog {
@@ -244,7 +245,7 @@ pub struct Arguments {
 }
 
 fn main() {
-    setup_log();
+    let log_file_path = setup_log();
     info!("*****************************************************************************");
     info!("Starting event logs listener...");
 
@@ -286,9 +287,7 @@ fn main() {
 
     // Configuration
     let path = Path::new(DEFAULT_CONFIGURATION_FILE_PATH);
-    if args.preview {
-        wait_for_setup_file(path);
-    }
+    wait_for_setup_file(path);
 
     let (mut configuration_file_json, configuration_file_content) = match read_setup_from_file(path)
     {
@@ -306,6 +305,7 @@ fn main() {
 
     // Flush
     let timer = Timer::new();
+    let log_file_path_clone = log_file_path.clone();
     let _timer_guard =
         timer.schedule_repeating(Duration::seconds(duration_as_integer), move || {
             let mut buffer_content = match BUFFER.get().lock() {
@@ -322,6 +322,8 @@ fn main() {
 
             buffer_content.clear();
             buffer_content.shrink_to_fit();
+
+            try_flush_log_buffer(log_file_path_clone.clone());
         });
 
     // Buffer
@@ -331,41 +333,39 @@ fn main() {
     add_start_event(&mut buffer_vec, Utc::now());
     BUFFER.set(Mutex::new(buffer_vec));
 
-    if args.preview {
-        // Generate audit.csv
-        if let Err(err) = generate_audit_csv(
-            &configuration_file_json.audit,
-            audit_folder.clone().into(),
-            &administrator_name[..],
-            is_pdc,
-        ) {
-            error!("An error ocurred while trying to generate the audit.csv file: {err}");
-        }
+    // Generate audit.csv
+    if let Err(err) = generate_audit_csv(
+        &configuration_file_json.audit,
+        audit_folder.clone().into(),
+        &administrator_name[..],
+        is_pdc,
+    ) {
+        error!("An error ocurred while trying to generate the audit.csv file: {err}");
+    }
 
-        // Generate GptTmpl.inf
-        if let Err(err) = generate_gpt_tmpl_inf(
-            &configuration_file_json.registry_values,
-            args.gpt_tmpl_file.clone().into(),
-            is_pdc,
-        ) {
-            error!("An error occurred while trying to generate the GptTmpl.inf file: {err}");
-        }
+    // Generate GptTmpl.inf
+    if let Err(err) = generate_gpt_tmpl_inf(
+        &configuration_file_json.registry_values,
+        args.gpt_tmpl_file.clone().into(),
+        is_pdc,
+    ) {
+        error!("An error occurred while trying to generate the GptTmpl.inf file: {err}");
+    }
 
-        // Generate Registry.pol
-        if let Err(err) = generate_registry_pol(
-            &configuration_file_json.pol_values,
-            &args.registry_pol_file[..],
-            &args.domain_name[..],
-            &args.domain_controller_dns_name[..],
-            is_pdc,
-        ) {
-            error!("An error occurred while trying to generate the Registry.pol file: {err}");
-        }
+    // Generate Registry.pol
+    if let Err(err) = generate_registry_pol(
+        &configuration_file_json.pol_values,
+        &args.registry_pol_file[..],
+        &args.domain_name[..],
+        &args.domain_controller_dns_name[..],
+        is_pdc,
+    ) {
+        error!("An error occurred while trying to generate the Registry.pol file: {err}");
+    }
 
-        // Force gpupdate
-        if let Err(err) = run_command("gpupdate /force") {
-            error!("An error occurred while trying to force the GP update: {err}");
-        }
+    // Force gpupdate
+    if let Err(err) = run_command("gpupdate /force") {
+        error!("An error occurred while trying to force the GP update: {err}");
     }
 
     // Subscriptions
@@ -383,7 +383,7 @@ fn main() {
 
     // We need to declare this variable here so the value it refers to never goes out of scope.
     // This is done to prevent the ReadDirectoryChangeWatcher object from being dropped which would cancel the monitoring.
-    let _file_watchers = if args.preview && is_pdc {
+    let _file_watchers = if is_pdc {
         let config_watcher_sender = channel_sender.clone();
 
         let config_watcher_result =
@@ -413,7 +413,8 @@ fn main() {
 
     // Service loop
     info!("Listening to event logs...");
-    if args.preview && is_pdc {
+    try_flush_log_buffer(log_file_path);
+    if is_pdc {
         let mut last_event = None;
 
         loop {
@@ -458,7 +459,7 @@ fn main() {
 
             thread::sleep(StdTimeDuration::from_secs(1));
         }
-    } else if args.preview && !is_pdc {
+    } else {
         // Loops every five minute to resubscribe if the version of the sync file has changed
         let mut version = None;
 
@@ -490,14 +491,64 @@ fn main() {
                 version = new_version;
             }
         }
-    } else {
-        loop {
-            thread::sleep(TEN_MILLIS);
-        }
     }
 }
 
-fn setup_log() {
+fn try_flush_log_buffer(log_file_path: PathBuf) {
+    let mut log_buffer = match LOG_BUFFER.get().lock() {
+        Ok(b) => b,
+        Err(err) => {
+            error!("Error occurred during log buffer retrieval: {err:?}");
+            return;
+        }
+    };
+
+    let mut output = String::new();
+    let _buffer_size = log_buffer.read_to_string(&mut output);
+
+    if output.is_empty() {
+        return;
+    }
+
+    let log_file_open = fs::File::options()
+        .create(true)
+        .append(true)
+        .read(true)
+        .open(log_file_path.as_os_str());
+
+    let mut log_file_open_result = match log_file_open {
+        Ok(f) => f,
+        Err(err) => {
+            error!("Error occurred during log file retrieval: {err:?}");
+            return;
+        }
+    };
+
+    let _write_result = log_file_open_result.write_all(output.as_bytes());
+}
+
+fn setup_log() -> PathBuf {
+    let log_level: LevelFilter = LevelFilter::Info;
+
+    let _builder = Builder::new()
+        .target(Target::Stdout)
+        .filter_level(log_level)
+        .format(|buf, record| {
+            writeln!(
+                buf,
+                "{} [{}] {}",
+                Local::now().to_rfc3339(),
+                record.level(),
+                record.args()
+            )
+        })
+        .init();
+
+    match BufferRedirect::stdout() {
+        Ok(b) => LOG_BUFFER.set(Mutex::new(b)),
+        Err(_err) => false,
+    };
+
     let log_file_folder = match current_dir() {
         Ok(exe_folder_path) => exe_folder_path,
         Err(_e) => temp_dir(),
@@ -509,20 +560,7 @@ fn setup_log() {
     log_filename.push("TenableLog_");
     log_filename.push(gethostname());
     log_filename.push(".log");
-    let log_file_path = log_file_folder.as_path().join(log_filename);
-
-    let log_file_open = fs::File::options()
-        .create(true)
-        .append(true)
-        .read(true)
-        .open(log_file_path.as_os_str());
-
-    let log_level = LevelFilter::Info;
-    let log_configuration = ConfigBuilder::new().set_time_format_rfc3339().build();
-    let _ = match log_file_open {
-        Ok(log_file) => WriteLogger::init(log_level, log_configuration, log_file),
-        Err(_err) => SimpleLogger::init(log_level, log_configuration),
-    };
+    log_file_folder.as_path().join(log_filename)
 }
 
 fn try_get_current_build_number() -> Option<u32> {
@@ -843,7 +881,9 @@ fn render_event(h_event: isize, flag: u32) -> String {
         .as_bool();
 
         let status = GetLastError();
-        if status != ERROR_SUCCESS && status != ERROR_INSUFFICIENT_BUFFER {}
+        if status != ERROR_SUCCESS && status != ERROR_INSUFFICIENT_BUFFER {
+            return EMPTY_STRING.to_string();
+        }
 
         buffersize = bufferused;
         let mut rendered_values: Vec<u16> = vec![0; buffersize as usize];
@@ -859,7 +899,9 @@ fn render_event(h_event: isize, flag: u32) -> String {
         )
         .as_bool();
 
-        if !render_result {}
+        if !render_result {
+            return EMPTY_STRING.to_string();
+        }
 
         build_event_log_record(rendered_values)
     }
