@@ -72,6 +72,9 @@ buffer. The listener flushed its buffer to the disk periodically.
 
     -w, --Preview
             Enable preview features
+
+    --UseXmlEventRender
+            Use the legacy XML event rendering method for listeners. Although slower than the current values-based approach, it provides greater stability. This option is disabled by default.
 ```
 
 ## Contribution

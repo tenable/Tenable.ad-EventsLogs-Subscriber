@@ -3,6 +3,7 @@ use crate::{
     channel::{is_default_channel, try_activate_and_refresh_channel_cache, DEFAULT_CHANNELS},
     Arguments, EventLog, EventsLogsConfiguration, EMPTY_STRING, PREVIEW,
 };
+use csv::{Terminator, WriterBuilder};
 use log::{error, info, warn};
 use minidom::{Element, NSChoice};
 use serde::{Deserialize, Deserializer, Serialize};
@@ -467,6 +468,20 @@ pub fn log_configuration(configuration_file_content: String, args: &Arguments) {
 const RSOP_NS: &str = "http://www.microsoft.com/GroupPolicy/Rsop";
 const SETTINGS_NS: &str = "http://www.microsoft.com/GroupPolicy/Settings";
 const AUDITING_NS: &str = "http://www.microsoft.com/GroupPolicy/Settings/Auditing";
+const AUDIT_KEY: &str =
+    "[{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
+const BACKUP_AUDIT_COMMAND: &str = "\
+        $domainDn = Get-ADDomain | select -exp DistinguishedName;\
+        $tenableGPO = Get-AdObject \
+            -LDAPFilter \"(&(objectClass=groupPolicyContainer)(displayName=Tenable.ad))\" \
+            -SearchBase \"CN=Policies,CN=System,$domainDn\" \
+            -Properties gPCMachineExtensionNames;\
+        $backupGPCMachineExtensionNames = $tenableGPO | select -exp gPCMachineExtensionNames;\
+        $gPCMachineExtensionNamesNoAudit = $backupGPCMachineExtensionNames -replace '__AUDIT_KEY__','';\
+        Set-AdObject \
+            -Identity $tenableGPO \
+            -Replace @{gPCMachineExtensionNames=$gPCMachineExtensionNamesNoAudit};\
+        $backupGPCMachineExtensionNames";
 
 pub fn generate_audit_csv(
     audit: &Vec<String>,
@@ -489,24 +504,20 @@ pub fn generate_audit_csv(
     let audit_csv_path = audit_folder.join("audit.csv");
 
     info!("Backup and remove auditpol CSE");
-    let backup_gpc_machine_extension_names = get_powershell_output(
-        "\
-        $domainDn = Get-ADDomain | select -exp DistinguishedName;\
-        $tenableGPO = Get-AdObject \
-            -LDAPFilter \"(&(objectClass=groupPolicyContainer)(displayName=Tenable.ad))\" \
-            -SearchBase \"CN=Policies,CN=System,$domainDn\" \
-            -Properties gPCMachineExtensionNames;\
-        $backupGPCMachineExtensionNames = $tenableGPO | select -exp gPCMachineExtensionNames;\
-        $gPCMachineExtensionNamesNoAudit = $backupGPCMachineExtensionNames \
-            -replace '\\[\\{F3CCC681-B74C-4060-9F26-CD84525DCA2A\\}\\{0F3F3735-573D-9804-99E4-AB2A69BA5FD4\\}\\]','';\
-        Set-AdObject \
-            -Identity $tenableGPO \
-            -Replace @{gPCMachineExtensionNames=$gPCMachineExtensionNamesNoAudit};\
-        $backupGPCMachineExtensionNames",
-    )?;
-    let backup_gpc_machine_extension_names = backup_gpc_machine_extension_names.trim();
+    let backup_audit_command = BACKUP_AUDIT_COMMAND.replace("__AUDIT_KEY__", AUDIT_KEY);
+    let backup_gpc_machine_extension_names: String =
+        get_powershell_unicode_output(backup_audit_command)?;
+    let mut backup_gpc_machine_extension_names =
+        backup_gpc_machine_extension_names.trim().to_string();
 
     info!("Previous value of gPCMachineExtensionNames: {backup_gpc_machine_extension_names}");
+
+    if !backup_gpc_machine_extension_names.contains(AUDIT_KEY) {
+        // We need to restore audit key or the Advanced Audit policies will not be applied anymore
+        backup_gpc_machine_extension_names =
+            format!("{}{}", backup_gpc_machine_extension_names, AUDIT_KEY);
+        info!("Adding missing audit key value to gPCMachineExtensionNames: {backup_gpc_machine_extension_names}");
+    }
 
     info!(
         "Generating {} on primary domain controller {}",
@@ -522,7 +533,7 @@ pub fn generate_audit_csv(
     });
 
     info!("Restore auditpol CSE");
-    let _ = get_powershell_output(format!(
+    let _ = get_powershell_output_lossy(format!(
         "\
         $domainDn = Get-ADDomain | select -exp DistinguishedName;\
         $tenableGPO = Get-AdObject \
@@ -530,7 +541,7 @@ pub fn generate_audit_csv(
             -SearchBase \"CN=Policies,CN=System,$domainDn\" \
             -Properties gPCMachineExtensionNames;\
         $backupGPCMachineExtensionNames = \"{backup_gpc_machine_extension_names}\";\
-        Set-AdObject \
+        $null = Set-AdObject \
             -Identity $tenableGPO \
             -Replace @{{gPCMachineExtensionNames=$backupGPCMachineExtensionNames}}"
     ))?;
@@ -743,7 +754,10 @@ fn generate_audit_csv_file(
         new_audit_csv.append(&mut basic_audit_policies_to_migrate);
     }
 
-    let mut writer = csv::Writer::from_path(&output_path)?;
+    let mut writer = WriterBuilder::new()
+        .terminator(Terminator::CRLF)
+        .from_path(&output_path)?;
+
     for audit_line in new_audit_csv {
         writer.serialize(audit_line)?;
     }
@@ -972,24 +986,40 @@ fn get_gpresult_xml(
 ) -> anyhow::Result<Element> {
     match get_gpresult_xml_for_user(temporary_task_folder, None) {
         Ok(xml) => return Ok(xml),
-        Err(err) => error!("RSoP file was not generated for current user: {err}"),
+        Err(err) => warn!("RSoP file was not generated for current user: {err}"),
     };
 
     match get_gpresult_xml_for_user(temporary_task_folder, Some(administrator_name)) {
         Ok(xml) => return Ok(xml),
-        Err(err) => error!("RSoP file was not generated for {administrator_name}: {err}"),
+        Err(err) => warn!("RSoP file was not generated for {administrator_name}: {err}"),
     };
 
-    let rsop_admins = get_powershell_output(
-        "Invoke-WmiMethod \
+    let rsop_admins = get_powershell_unicode_output(
+        "
+        $domainSid = \"$((Get-ADDomain).DomainSID)\";
+        Invoke-WmiMethod \
             -Class RsopLoggingModeProvider \
             -Name RsopEnumerateUsers \
             -Namespace Root\\RSOP \
         | Select \
             -ExpandProperty userSids \
-        | Get-ADUser \
+        | Where-Object { $_.StartsWith($domainSid) } \
+        | Get-ADUser -ErrorAction SilentlyContinue \
         | % { $_.SamAccountName }",
-    )?;
+    );
+
+    let rsop_admins = match rsop_admins {
+        Ok(output) => {
+            info!(
+                "RSoP admins successfully computed from Invoke-WmiMethod RsopLoggingModeProvider"
+            );
+            output
+        }
+        Err(err) => {
+            error!("RSoP admins cannot be generated from Invoke-WmiMethod RsopLoggingModeProvider: {err}");
+            return Err(anyhow::anyhow!(err));
+        }
+    };
 
     let rsop_admins = rsop_admins
         .lines()
@@ -999,7 +1029,7 @@ fn get_gpresult_xml(
     for rsop_admin in rsop_admins {
         match get_gpresult_xml_for_user(temporary_task_folder, Some(rsop_admin)) {
             Ok(xml) => return Ok(xml),
-            Err(err) => error!("RSoP file was not generated for {rsop_admin}: {err}"),
+            Err(err) => warn!("RSoP file was not generated for {rsop_admin}: {err}"),
         };
     }
 
@@ -1135,6 +1165,47 @@ where
     Ok(stdout)
 }
 
+/// PowerShell's output is a little bit difficult to handle in regards to encoding.
+/// It's a bit of CP437, but when this code page doesn't work, it's falling back to
+/// something else (yet undetermined).
+/// The `get_powershell_unicode_output()` method handles such situations by passing
+/// the PowerShell's command output to a file for which encoding is clearly defined
+/// (UTF8 directly here) thus allowing safe reading.
+///
+/// ⚠️ this method uses a file to get the command's output, it's not recommended
+/// to use it in code's hot paths.
+fn get_powershell_unicode_output<S>(command: S) -> anyhow::Result<String>
+where
+    S: AsRef<OsStr>,
+    S: std::fmt::Display,
+{
+    info!("Run powershell command through tmpfile:\r\n{command}");
+
+    let file_path = tempfile::NamedTempFile::new()?.into_temp_path();
+    let file_path = file_path.to_str().unwrap_or("default.tmp");
+
+    let command =
+        format!("$x = $({command}); [System.IO.File]::WriteAllLines(\"{file_path}\", $x)");
+    info!("\r\nReal command:\r\n{command}");
+
+    let output = std::process::Command::new("PowerShell")
+        .arg("-c")
+        .arg(command)
+        .output()?;
+
+    if !output.status.success() {
+        let error = String::from_utf8(output.stderr)?;
+        return Err(anyhow::anyhow!(error));
+    }
+
+    let stdout = std::fs::read_to_string(file_path)?;
+    let _ = std::fs::remove_file(file_path);
+
+    info!("\r\nOutput of the command:\r\n{stdout}");
+
+    Ok(stdout)
+}
+
 #[cfg(test)]
 mod tests {
     use std::ffi::c_void;
@@ -1205,6 +1276,7 @@ mod tests {
                 gpt_tmpl_file: "".into(),
                 registry_pol_file: "".into(),
                 conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
+                use_xml_render: false,
             };
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
@@ -1267,6 +1339,7 @@ mod tests {
                 gpt_tmpl_file: "".into(),
                 registry_pol_file: "".into(),
                 conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
+                use_xml_render: false,
             };
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
@@ -1331,6 +1404,7 @@ mod tests {
                 gpt_tmpl_file: "".into(),
                 registry_pol_file: "".into(),
                 conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
+                use_xml_render: false,
             };
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
@@ -1399,6 +1473,7 @@ mod tests {
                 gpt_tmpl_file: "".into(),
                 registry_pol_file: "".into(),
                 conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
+                use_xml_render: false,
             };
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
@@ -1535,6 +1610,43 @@ mod tests {
             });
 
             assert!(check_all_vec_values);
+        }
+    }
+
+    mod powershell {
+        use super::super::*;
+
+        #[test]
+        fn ensure_ps_unicode_is_handling_non_ascii() {
+            let test_str = "This is à tèst with non-ASCI£ charact€rs 🐼";
+            let test_command = format!("Write-Output '{test_str}'");
+
+            let output = get_powershell_unicode_output(test_command).unwrap();
+            let output = output.trim();
+
+            assert_eq!(test_str, output);
+        }
+
+        #[test]
+        fn ensure_ps_unicode_is_handling_ascii_as_get_ps_output() {
+            let test_str = "This is an ASCII test only (keep $$$ secured)";
+            let test_command = format!("Write-Output '{test_str}'");
+
+            let output1 = get_powershell_unicode_output(&test_command).unwrap();
+            let output2 = get_powershell_output(&test_command).unwrap();
+
+            assert_eq!(output1, output2);
+        }
+
+        #[test]
+        fn ps_unicode_should_return_error_when_ps_command_is() {
+            let result1 = get_powershell_unicode_output(
+                "foobarbazquxquux - this shouldn't be a valid PS command",
+            );
+            let result2 = get_powershell_unicode_output("Write-Error 'Well...'");
+
+            assert!(result1.is_err());
+            assert!(result2.is_err());
         }
     }
 }

@@ -1,2 +1,5 @@
 [toolchain]
-channel = "1.65-x86_64-pc-windows-gnu"
+# Available versions can be found here: https://rust-lang.github.io/rustup-components-history/x86_64-pc-windows-msvc.html
+# Crate compatibility with said rustc version can be checked using lib.rs. Ex: https://lib.rs/compat/tokio
+channel = "1.65"
+targets = ["x86_64-pc-windows-gnu"]

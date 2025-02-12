@@ -27,13 +27,11 @@ use std::{
         mpsc::{channel, Receiver, Sender, TryRecvError},
         Mutex,
     },
+    thread,
     time::{Duration as StdTimeDuration, Instant},
-    {ptr::null_mut, thread},
 };
 use timer::Timer;
-use windows::Win32::Foundation::{
-    CloseHandle, GetLastError, ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS, HANDLE,
-};
+use windows::Win32::Foundation::{CloseHandle, HANDLE};
 use windows::Win32::Security;
 use windows::Win32::Storage::FileSystem;
 use windows::Win32::System::EventLog::*;
@@ -43,32 +41,26 @@ use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
 
 mod channel;
+mod helpers;
+mod render_event {
+    pub mod using_values;
+    pub mod using_xml;
+}
+mod constants;
+use constants::*;
 mod setup;
-
 use setup::{
     generate_audit_csv, generate_gpt_tmpl_inf, generate_registry_pol, handle_file_changes,
     log_configuration, read_setup_from_file, run_command, subscribe_to_channels, FileChanged,
     SYNC_FILE_PATH,
 };
 
-const EVT_RENDER_FLAG_EVENT_XML: u32 = windows::Win32::System::EventLog::EvtRenderEventXml.0 as u32;
-const NAME: &str = "Name";
-const SYSTEM_TIME: &str = "SystemTime";
-const DATE_TIME_FORMAT: &str = "%Y%m%d%H%M%S%.6f-000";
-const QUOTE: &str = "\"";
-const EMPTY_STRING: &str = "";
+const EVT_RENDER_FLAG_EVENT_XML: u32 = EvtRenderEventXml.0 as u32;
+
 const ZERO_STRING: &str = "0";
-const TIME_CREATED: &str = "TimeCreated";
 const EVENT_LOGS_COUNT_LEAP: u32 = 1000; // Event logs counter leap to wait
 const DEFAULT_CONFIGURATION_FILE_PATH: &str = "./TenableADEventsListenerConfiguration.json";
-
 const ONE_MINUTE: StdTimeDuration = StdTimeDuration::from_secs(60);
-
-// Define insertion string list delimiter
-// We currently use the following sequence: \u001F\u001E
-// which contains the Unit Separator and the Record Separator character
-// and should never appears in an insertion string.
-const DATA_DELIMITER: &str = "\u{1f}\u{1e}";
 
 static mut MAX_MEMORY_SIZE_BYTES: usize = 524288000; // Maximum listener memory size
 static mut MAX_THROUGHPUT: f32 = 1500.0; // Maximum throughput, in events per second
@@ -78,6 +70,7 @@ static mut PREVIEW: bool = false; // Enable or disable preview features
 static mut EVENT_LOGS_COUNT: u32 = 0; // Event logs counter
 static BUFFER: Storage<Mutex<Vec<u8>>> = Storage::new(); // Buffer to store event logs momentarily
 static LOG_BUFFER: Storage<Mutex<BufferRedirect>> = Storage::new(); // Buffer to store logs momentarily
+static mut XML_RENDER_ENABLED: bool = false; // Allows to use legacy xml render
 
 #[derive(Deserialize, PartialEq, Eq, Hash)]
 pub struct EventLog {
@@ -242,12 +235,21 @@ pub struct Arguments {
         help = "Minimum interval between each configuration update"
     )]
     conf_interval_in_minutes: NonZeroU8,
+
+    #[clap(
+        long = "UseXmlEventRender",
+        help = "Allows to use the legacy XML event rendering method for listeners. Although slower than the current values-based approach, it provides greater stability. This option is disabled by default."
+    )]
+    pub(crate) use_xml_render: bool,
 }
 
 fn main() {
     let log_file_path = setup_log();
     info!("*****************************************************************************");
     info!("Starting event logs listener...");
+    info!("Version: {}", VERSION);
+
+    try_flush_log_buffer(log_file_path.clone());
 
     let args = match Arguments::try_parse() {
         Ok(args) => args,
@@ -283,6 +285,13 @@ fn main() {
         MAX_MEMORY_SIZE_BYTES = args.max_buffer_size_bytes;
         MAX_THROUGHPUT = args.max_throughput as f32;
         DURATION_LEAP = StdTimeDuration::from_millis(args.duration_leap);
+        XML_RENDER_ENABLED = args.use_xml_render;
+
+        if XML_RENDER_ENABLED {
+            info!("Using legacy XML Event render")
+        } else {
+            info!("Using Values Event render")
+        }
     }
 
     // Configuration
@@ -304,6 +313,7 @@ fn main() {
     set_processor_limit(cpu_rate);
 
     // Flush
+    try_flush_log_buffer(log_file_path.clone());
     let timer = Timer::new();
     let log_file_path_clone = log_file_path.clone();
     let _timer_guard =
@@ -340,8 +350,10 @@ fn main() {
         &administrator_name[..],
         is_pdc,
     ) {
-        error!("An error ocurred while trying to generate the audit.csv file: {err}");
+        error!("An error occurred while trying to generate the audit.csv file: {err}");
     }
+
+    try_flush_log_buffer(log_file_path.clone());
 
     // Generate GptTmpl.inf
     if let Err(err) = generate_gpt_tmpl_inf(
@@ -351,6 +363,8 @@ fn main() {
     ) {
         error!("An error occurred while trying to generate the GptTmpl.inf file: {err}");
     }
+
+    try_flush_log_buffer(log_file_path.clone());
 
     // Generate Registry.pol
     if let Err(err) = generate_registry_pol(
@@ -363,10 +377,14 @@ fn main() {
         error!("An error occurred while trying to generate the Registry.pol file: {err}");
     }
 
+    try_flush_log_buffer(log_file_path.clone());
+
     // Force gpupdate
     if let Err(err) = run_command("gpupdate /force") {
         error!("An error occurred while trying to force the GP update: {err}");
     }
+
+    try_flush_log_buffer(log_file_path.clone());
 
     // Subscriptions
     let callback: EVT_SUBSCRIBE_CALLBACK = Some(subscription_callback);
@@ -378,6 +396,8 @@ fn main() {
         &configuration_file_json,
         &mut subscribed_channels,
     );
+
+    try_flush_log_buffer(log_file_path.clone());
 
     let (channel_sender, receiver): (Sender<()>, Receiver<()>) = channel();
 
@@ -702,7 +722,11 @@ unsafe extern "system" fn subscription_callback(
                 None => {}
             }
 
-            let formatted_event = render_event(h_event, EVT_RENDER_FLAG_EVENT_XML);
+            let formatted_event = if XML_RENDER_ENABLED {
+                render_event::using_xml::render_event_using_xml(h_event, EVT_RENDER_FLAG_EVENT_XML)
+            } else {
+                render_event::using_values::render_event_using_values(h_event)
+            };
 
             if formatted_event == EMPTY_STRING {
                 return 1;
@@ -861,177 +885,6 @@ fn add_start_event(buffer: &mut Vec<u8>, now: DateTime<Utc>) {
     let start_event_bytes = start_event.as_bytes();
 
     buffer.extend(start_event_bytes);
-}
-
-fn render_event(h_event: isize, flag: u32) -> String {
-    let mut buffersize = 0;
-    let mut bufferused: u32 = 0;
-    let mut properties_count: u32 = 0;
-
-    unsafe {
-        let _buffer_search = EvtRender(
-            0,
-            h_event,
-            flag,
-            buffersize,
-            null_mut(),
-            &mut bufferused as *mut u32,
-            null_mut(),
-        )
-        .as_bool();
-
-        let status = GetLastError();
-        if status != ERROR_SUCCESS && status != ERROR_INSUFFICIENT_BUFFER {
-            return EMPTY_STRING.to_string();
-        }
-
-        buffersize = bufferused;
-        let mut rendered_values: Vec<u16> = vec![0; buffersize as usize];
-
-        let render_result = EvtRender(
-            0,
-            h_event,
-            flag,
-            buffersize,
-            rendered_values.as_mut_ptr() as *mut c_void,
-            &mut bufferused,
-            &mut properties_count,
-        )
-        .as_bool();
-
-        if !render_result {
-            return EMPTY_STRING.to_string();
-        }
-
-        build_event_log_record(rendered_values)
-    }
-}
-
-fn build_event_log_record(rendered_values: Vec<u16>) -> String {
-    let read_xml = String::from_utf16_lossy(&rendered_values[..])
-        .trim_matches(char::from(0))
-        .to_string();
-
-    let root: Element = match read_xml.parse() {
-        Ok(c) => c,
-        Err(_e) => return EMPTY_STRING.to_string(),
-    };
-
-    let mut root_children = root.children();
-
-    // System
-    let event_system_option = root_children.next();
-    let event_system = match event_system_option {
-        Some(n) => n,
-        None => return EMPTY_STRING.to_string(),
-    };
-    let mut system_properties = event_system.children();
-    let provider_name_option = match system_properties.next() {
-        Some(n) => n,
-        None => return EMPTY_STRING.to_string(),
-    };
-    let provider_name = match provider_name_option.attr(NAME) {
-        Some(n) => n,
-        None => return EMPTY_STRING.to_string(),
-    };
-
-    let event_id = match system_properties.next() {
-        Some(n) => n.text(),
-        None => return EMPTY_STRING.to_string(),
-    };
-
-    let mut prop_count = 0;
-    let created_date_time_raw_option = loop {
-        prop_count += 1;
-        if prop_count == 7 {
-            return EMPTY_STRING.to_string();
-        }
-
-        break match system_properties.next() {
-            Some(n) if n.name() == TIME_CREATED => n,
-            _ => continue,
-        };
-    };
-
-    let created_date_time_raw = match created_date_time_raw_option.attr(SYSTEM_TIME) {
-        Some(n) => n,
-        None => return EMPTY_STRING.to_string(),
-    };
-    let created_date_time_option = match created_date_time_raw.parse::<DateTime<Utc>>() {
-        Ok(c) => c,
-        Err(_e) => return EMPTY_STRING.to_string(),
-    };
-    let created_date_time = created_date_time_option.format(DATE_TIME_FORMAT);
-
-    // Data
-    let event_data = match root_children.next() {
-        Some(n) => n,
-        None => return EMPTY_STRING.to_string(),
-    };
-    let event_data_properties = event_data.children();
-    let mut event_data_strings = String::new();
-    let mut last_property_has_no_data = false;
-    let mut data_properties_count = 0;
-    for data_prop in event_data_properties {
-        let prop_text = data_prop.text();
-        last_property_has_no_data = prop_text == EMPTY_STRING;
-
-        event_data_strings = format!(
-            "{}{}",
-            event_data_strings,
-            format!("{}{}{}{}", QUOTE, data_prop.text(), QUOTE, DATA_DELIMITER)
-        );
-
-        data_properties_count = data_properties_count + 1;
-    }
-
-    // Handle eventual event data sub node
-    if (data_properties_count == 1) && last_property_has_no_data {
-        event_data_strings.clear();
-
-        let event_sub_data = match event_data.children().next() {
-            Some(n) => n,
-            None => return EMPTY_STRING.to_string(),
-        };
-
-        event_data_strings = build_sub_event_data(event_sub_data);
-    }
-
-    let event_data_strings = remove_last_chars(&event_data_strings, 2);
-
-    format!(
-        "({})#{}##{}##{}##################\n",
-        event_data_strings, event_id, provider_name, created_date_time
-    )
-}
-
-fn build_sub_event_data(event_sub_data: &Element) -> String {
-    let mut event_data_strings = String::new();
-    let event_sub_data_properties = event_sub_data.children();
-
-    for data_prop in event_sub_data_properties {
-        event_data_strings = format!(
-            "{}{}",
-            event_data_strings,
-            format!("{}{}{}{}", QUOTE, data_prop.text(), QUOTE, DATA_DELIMITER)
-        );
-    }
-
-    event_data_strings
-}
-
-fn remove_last_chars(s: &String, n: usize) -> &str {
-    if n <= 0 {
-        return s;
-    }
-
-    let len = s.len();
-    if n > len {
-        return EMPTY_STRING;
-    }
-
-    let (result, _) = s.split_at(len - n);
-    result
 }
 
 fn wait_for_setup_file(path: &Path) {
@@ -1357,393 +1210,6 @@ mod tests {
         }
     }
 
-    mod build_event_log_record {
-        use super::super::*;
-        use windows::core::HSTRING;
-
-        #[test]
-        fn it_should_convert_an_xml_event_to_an_event_log() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" />\
-                  <EventID>4688</EventID>\
-                  <Version>2</Version>\
-                  <Level>0</Level>\
-                  <Task>13312</Task>\
-                  <Opcode>0</Opcode>\
-                  <Keywords>0x8020000000000000</Keywords>\
-                  <TimeCreated SystemTime=\"2022-08-01T14:03:19.253078100Z\" />\
-                  <EventRecordID>3784135</EventRecordID>\
-                  <Correlation />\
-                  <Execution ProcessID=\"4\" ThreadID=\"3120\" />\
-                  <Channel>Security</Channel>\
-                  <Computer>DC-ROOT.ROOT.DOMAIN</Computer>\
-                  <Security />\
-                 </System>\
-                 <EventData>\
-                  <Data Name=\"SubjectUserSid\">S-1-5-18</Data>\
-                  <Data Name=\"SubjectUserName\">DC-ROOT$</Data>\
-                  <Data Name=\"SubjectDomainName\">ROOT</Data>\
-                  <Data Name=\"SubjectLogonId\">0x3e7</Data>\
-                  <Data Name=\"NewProcessId\">0x1638</Data>\
-                  <Data Name=\"NewProcessName\"> \
-                   C:\\Windows\\System32\\backgroundTaskHost.exe\
-                  </Data>\
-                  <Data Name=\"TokenElevationType\">%%1936</Data>\
-                  <Data Name=\"ProcessId\">0x3a0</Data>\
-                  <Data Name=\"CommandLine\"> \
-                   \"C:\\Windows\\system32\\backgroundTaskHost.exe\" \
-                   -ServerName:CortanaUI.AppXy7vb4pc2dr3kc93kfc509b1d0arkfb2x.mca</Data>\
-                  <Data Name=\"TargetUserSid\">S-1-0-0</Data>\
-                  <Data Name=\"TargetUserName\">administrator</Data>\
-                  <Data Name=\"TargetDomainName\">ROOT</Data>\
-                  <Data Name=\"TargetLogonId\">0x77260</Data>\
-                  <Data Name=\"ParentProcessName\">C:\\Windows\\System32\\svchost.exe</Data>\
-                  <Data Name=\"MandatoryLabel\">S-1-16-4096</Data>\
-                 </EventData>\
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(
-                result,
-                "(\"S-1-5-18\"\u{1f}\u{1e}\
-                \"DC-ROOT$\"\u{1f}\u{1e}\
-                \"ROOT\"\u{1f}\u{1e}\
-                \"0x3e7\"\u{1f}\u{1e}\
-                \"0x1638\"\u{1f}\u{1e}\
-                \" C:\\Windows\\System32\\backgroundTaskHost.exe\"\u{1f}\u{1e}\
-                \"%%1936\"\u{1f}\u{1e}\
-                \"0x3a0\"\u{1f}\u{1e}\
-                \" \"C:\\Windows\\system32\\backgroundTaskHost.exe\" \
-                -ServerName:CortanaUI.AppXy7vb4pc2dr3kc93kfc509b1d0arkfb2x.mca\"\u{1f}\u{1e}\
-                \"S-1-0-0\"\u{1f}\u{1e}\
-                \"administrator\"\u{1f}\u{1e}\
-                \"ROOT\"\u{1f}\u{1e}\
-                \"0x77260\"\u{1f}\u{1e}\
-                \"C:\\Windows\\System32\\svchost.exe\"\u{1f}\u{1e}\
-                \"S-1-16-4096\")\
-                #4688##Microsoft-Windows-Security-Auditing#\
-                #20220801140319.253078-000##################\n"
-            );
-        }
-
-        #[test]
-        fn it_should_convert_an_xml_event_with_a_different_system_node_to_en_event_log() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                    <System>\
-                        <Provider Name=\"VSSAudit\" />\
-                        <EventID Qualifiers=\"0\">8222</EventID>\
-                        <Level>0</Level>\
-                        <Task>3</Task>\
-                        <Keywords>0x80a0000000000000</Keywords>\
-                        <TimeCreated SystemTime=\"2022-08-04T13:28:22.517359200Z\" />\
-                        <EventRecordID>3986554</EventRecordID>\
-                        <Channel>Security</Channel>\
-                        <Computer>DC-ROOT.ROOT.DOMAIN</Computer>\
-                        <Security UserID=\"S-1-5-18\" />\
-                    </System>\
-                    <EventData>\
-                        <Data>S-1-5-21-3770311822-3616871986-1308186358-11269</Data>\
-                        <Data>ROOT\\AttackerAdmin</Data>\
-                        <Data>0x0000000000001630</Data>\
-                        <Data>C:\\Windows\\System32\\esentutl.exe</Data>\
-                        <Data>{f9f78cf6-f380-4c9e-93d0-fe3a03bc03b7}</Data>\
-                        <Data>{abc28faa-32a4-4b26-a0da-b18c9471f751}</Data>\
-                        <Data>{b5946137-7b9f-4925-af80-51abd60b20d5}</Data>\
-                        <Data>DC-ROOT.ROOT.DOMAIN</Data>\
-                        <Data>\\\\?\\Volume{ca4a3263-dfab-48ee-a67f-d64e5ef1ee5c}\\</Data>\
-                        <Data>\\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy14</Data>\
-                    </EventData>\
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(
-                result,
-                "(\"S-1-5-21-3770311822-3616871986-1308186358-11269\"\u{1f}\u{1e}\
-                \"ROOT\\AttackerAdmin\"\u{1f}\u{1e}\
-                \"0x0000000000001630\"\u{1f}\u{1e}\
-                \"C:\\Windows\\System32\\esentutl.exe\"\u{1f}\u{1e}\
-                \"{f9f78cf6-f380-4c9e-93d0-fe3a03bc03b7}\"\u{1f}\u{1e}\
-                \"{abc28faa-32a4-4b26-a0da-b18c9471f751}\"\u{1f}\u{1e}\
-                \"{b5946137-7b9f-4925-af80-51abd60b20d5}\"\u{1f}\u{1e}\
-                \"DC-ROOT.ROOT.DOMAIN\"\u{1f}\u{1e}\
-                \"\\\\?\\Volume{ca4a3263-dfab-48ee-a67f-d64e5ef1ee5c}\\\"\u{1f}\u{1e}\
-                \"\\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy14\")\
-                #8222##VSSAudit##20220804132822.517359-000##################\n"
-            );
-        }
-
-        #[test]
-        fn it_should_convert_an_efs_xml_event_to_an_event_log() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                  <System>\
-                    <Provider Name=\"Microsoft-Windows-EFS\" \
-                              Guid=\"{3663a992-84be-40ea-bba9-90c7ed544222}\" />\
-                    <EventID>1</EventID>\
-                    <Version>0</Version>\
-                    <Level>2</Level>\
-                    <Task>0</Task>\
-                    <Opcode>0</Opcode>\
-                    <Keywords>0x8000000000000000</Keywords>\
-                    <TimeCreated SystemTime=\"2022-08-03T16:03:02.067389300Z\" />\
-                    <EventRecordID>19867</EventRecordID>\
-                    <Correlation />\
-                    <Execution ProcessID=\"716\" ThreadID=\"4816\" />\
-                    <Channel>Microsoft-Windows-EFS/Debug</Channel>\
-                    <Computer>DC-ROOT.ROOT.DOMAIN</Computer>\
-                    <Security UserID=\"S-1-5-18\" />\
-                  </System>\
-                  <UserData>\
-                    <EfsLogString1Data xmlns=\"http://schemas.microsoft.com/schemas/event/\
-                                               Microsoft.Windows/1.0.0.0\">\
-                      <FileNumber>6</FileNumber>\
-                      <LineNumber>4769</LineNumber>\
-                      <Param>53</Param>\
-                    </EfsLogString1Data>\
-                  </UserData>\
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(
-                result,
-                "(\"6\"\u{1f}\u{1e}\"4769\"\u{1f}\u{1e}\"53\")\
-                #1##Microsoft-Windows-EFS##20220803160302.067389-000##################\n"
-            );
-        }
-
-        #[test]
-        fn it_should_convert_an_xml_event_to_an_event_log_with_no_data_when_no_data() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                  <EventID>4688</EventID> \
-                  <Version>2</Version> \
-                  <Level>0</Level> \
-                  <Task>13312</Task> \
-                  <Opcode>0</Opcode> \
-                  <Keywords>0x8020000000000000</Keywords> \
-                  <TimeCreated SystemTime=\"2022-08-01T14:03:19.253078100Z\" /> \
-                  <EventRecordID>3784135</EventRecordID> \
-                  <Correlation /> \
-                  <Execution ProcessID=\"4\" ThreadID=\"3120\" /> \
-                  <Channel>Security</Channel> \
-                  <Computer>DC-ROOT.ROOT.DOMAIN</Computer> \
-                  <Security /> \
-                 </System>\
-                 <EventData>\
-                 </EventData> \
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(
-                result,
-                "()#4688##Microsoft-Windows-Security-Auditing#\
-                #20220801140319.253078-000##################\n"
-            );
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_root_has_no_children() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_system_has_no_children() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                 </System>\
-                 <EventData>\
-                 </EventData> \
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_provider_has_no_name() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                 </System>\
-                 <EventData>\
-                 </EventData> \
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_there_is_no_event_id() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                 </System>\
-                 <EventData>\
-                 </EventData> \
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empry_string_when_there_is_no_time_created() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                  <EventID>4688</EventID> \
-                  <Version>2</Version> \
-                  <Level>0</Level> \
-                  <Task>13312</Task> \
-                  <Opcode>0</Opcode> \
-                  <Keywords>0x8020000000000000</Keywords> \
-                 </System>\
-                 <EventData>\
-                 </EventData> \
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_there_is_no_event_data() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                  <EventID>4688</EventID> \
-                  <Version>2</Version> \
-                  <Level>0</Level> \
-                  <Task>13312</Task> \
-                  <Opcode>0</Opcode> \
-                  <Keywords>0x8020000000000000</Keywords> \
-                  <TimeCreated SystemTime=\"2022-08-01T14:03:19.253078100Z\" /> \
-                  <EventRecordID>3784135</EventRecordID> \
-                  <Correlation /> \
-                  <Execution ProcessID=\"4\" ThreadID=\"3120\" /> \
-                  <Channel>Security</Channel> \
-                  <Computer>DC-ROOT.ROOT.DOMAIN</Computer> \
-                  <Security /> \
-                 </System>\
-                </Event>",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_given_an_invalid_xml() {
-            // Arrange
-            let event = HSTRING::from(
-                "\
-                <Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\">\
-                 <System>\
-                  <Provider Name=\"Microsoft-Windows-Security-Auditing\" \
-                            Guid=\"{54849625-5478-4994-a5ba-3e3b0328c30d}\" /> \
-                ...",
-            );
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-
-        #[test]
-        fn it_should_return_an_empty_string_when_given_an_empty_string() {
-            // Arrange
-            let event = HSTRING::from("");
-
-            // Act
-            let result = build_event_log_record(event.as_wide().to_vec());
-
-            // Assert
-            assert_eq!(result, "");
-        }
-    }
-
     mod try_adjust_throughput {
         use super::super::*;
 
@@ -1781,114 +1247,6 @@ mod tests {
                 // Assert
                 assert_eq!(SLEEP_DURATION, StdTimeDuration::from_millis(40));
             }
-        }
-    }
-
-    mod remove_last_chars {
-        use super::super::*;
-
-        #[test]
-        fn it_should_not_remove_0_chars() {
-            // Arrange
-            let s = String::from("Hello, world!");
-            let n = 0;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "Hello, world!");
-        }
-
-        #[test]
-        fn it_should_remove_the_last_char() {
-            // Arrange
-            let s = String::from("Hello, world!");
-            let n = 1;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "Hello, world");
-        }
-
-        #[test]
-        fn it_should_remove_the_last_2_chars() {
-            // Arrange
-            let s = String::from("Hello, world!");
-            let n = 2;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "Hello, worl");
-        }
-
-        #[test]
-        fn it_should_remove_all_chars() {
-            // Arrange
-            let s = String::from("Hello, world!");
-            let n = s.len();
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "");
-        }
-
-        #[test]
-        fn it_should_remove_all_chars_on_overflow() {
-            // Arrange
-            let s = String::from("Hello, world!");
-            let n = s.len() + 1;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "");
-        }
-
-        #[test]
-        fn it_should_remove_all_chars_when_the_string_has_the_same_size() {
-            // Arrange
-            let s = String::from("HW");
-            let n = s.len() + 1;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "");
-        }
-
-        #[test]
-        fn it_should_remove_all_chars_when_the_string_is_too_small() {
-            // Arrange
-            let s = String::from("H");
-            let n = s.len() + 1;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "");
-        }
-
-        #[test]
-        fn it_should_remove_all_chars_when_the_string_is_empty() {
-            // Arrange
-            let s = String::from("");
-            let n = s.len() + 1;
-
-            // Act
-            let s = remove_last_chars(&s, n);
-
-            // Assert
-            assert_eq!(s, "");
         }
     }
 
