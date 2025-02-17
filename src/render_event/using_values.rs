@@ -100,6 +100,9 @@ unsafe fn render_event_props(h_event: isize, flag: EVT_RENDER_CONTEXT_FLAGS) -> 
         props: rendered_values,
         count: properties_count,
     };
+
+    EvtClose(hContext);
+
     Some(event_data)
 }
 
