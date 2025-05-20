@@ -136,5 +136,7 @@
   ],
   "PolRegistryValues": [
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Audit\\ProcessCreationIncludeCmdLine_Enabled=4,1"
-  ]
+  ],
+  "SmbModeActivated": false,
+  "RelayAccountUsername": ""
 }

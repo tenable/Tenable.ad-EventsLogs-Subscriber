@@ -10,8 +10,7 @@ pub const DEFAULT_CHANNELS: [&str; 3] = ["Security", "Application", "System"];
 pub fn is_default_channel(channel_name: &str) -> bool {
     DEFAULT_CHANNELS
         .iter()
-        .find(|c| c.to_lowercase() == channel_name.to_lowercase())
-        .is_some()
+        .any(|c| c.to_lowercase() == channel_name.to_lowercase())
 }
 
 const WINDOWS_SERVER_2022_BUILD: u32 = 20348;

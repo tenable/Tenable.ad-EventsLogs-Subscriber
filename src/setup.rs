@@ -1,12 +1,19 @@
+use super::constants::*;
+use crate::configuration::{Arguments, EventsLogsConfiguration};
+use crate::powershell::{
+    force_gpo_update, get_powershell_output_lossy, get_powershell_unicode_output,
+};
+use crate::sharing::file_sharing_manager::FileSharingManager;
 use crate::{
     build_xml_query,
     channel::{is_default_channel, try_activate_and_refresh_channel_cache, DEFAULT_CHANNELS},
-    Arguments, EventLog, EventsLogsConfiguration, EMPTY_STRING, PREVIEW,
+    EventLog, PREVIEW,
 };
 use csv::{Terminator, WriterBuilder};
 use log::{error, info, warn};
 use minidom::{Element, NSChoice};
 use serde::{Deserialize, Deserializer, Serialize};
+use std::sync::{Arc, Mutex};
 use std::{
     collections::{HashMap, HashSet},
     ffi::{c_void, OsStr},
@@ -42,17 +49,8 @@ pub enum FileChanged {
     SyncFileChanged,
 }
 
-pub fn read_setup_from_file(path: &Path) -> std::io::Result<(EventsLogsConfiguration, String)> {
-    info!("Reading setup from file {}", path.display());
-
-    let configuration_file_content = std::fs::read_to_string(path)?;
-    let configuration_file_json: EventsLogsConfiguration =
-        serde_json::from_str(&configuration_file_content)?;
-
-    Ok((configuration_file_json, configuration_file_content))
-}
-
 pub fn handle_file_changes(
+    file_sharing_manager: &Arc<Mutex<FileSharingManager>>,
     path: &Path,
     subscribed_channels: &mut HashMap<String, isize>,
     args: &Arguments,
@@ -62,16 +60,15 @@ pub fn handle_file_changes(
     file_changed: FileChanged,
     is_pdc: bool,
 ) {
-    let (configuration_file_json, configuration_file_content) = match read_setup_from_file(path) {
-        Ok(result) => result,
-        Err(err) => {
-            // TODO: Add a retry mechanism?
-            error!("An error occurred while reading the setup file: {err}");
-            return;
-        }
-    };
-
-    log_configuration(configuration_file_content, args);
+    let (configuration_file_json, configuration_file_content) =
+        match EventsLogsConfiguration::read_setup_from_file(path) {
+            Ok(result) => result,
+            Err(err) => {
+                // TODO: Add a retry mechanism?
+                error!("An error occurred while reading the setup file: {err}");
+                return;
+            }
+        };
 
     // Ensure that the current and new configuration are different before trying to do anything.
     match file_changed {
@@ -81,8 +78,8 @@ pub fn handle_file_changes(
                 return;
             }
 
+            log_configuration(configuration_file_content, args);
             unsubscribe_all_channels(subscribed_channels);
-
             subscribed_channels.clear();
 
             if let Err(err) = generate_audit_csv(
@@ -112,7 +109,7 @@ pub fn handle_file_changes(
                 error!("An error occurred while trying to generate the Registry.pol file: {err}");
             }
 
-            if let Err(err) = run_command("gpupdate /force") {
+            if let Err(err) = force_gpo_update() {
                 error!("An error occurred while trying to force the GP update: {err}");
             }
 
@@ -122,6 +119,14 @@ pub fn handle_file_changes(
                 &configuration_file_json,
                 subscribed_channels,
             );
+
+            // Here we use a block to limit the lifetime of the lock guard.
+            {
+                let mut curr_file_sharing_manager = file_sharing_manager.lock().unwrap();
+                let _ = curr_file_sharing_manager
+                    .on_configuration_change(is_pdc, &configuration_file_json)
+                    .map_err(|e| error!("An error occurred while trying to live update the file sharing implementation: {:?}", e));
+            }
 
             *current_configuration = configuration_file_json;
 
@@ -134,7 +139,7 @@ pub fn handle_file_changes(
 
             subscribed_channels.clear();
 
-            if let Err(err) = run_command("gpupdate /force") {
+            if let Err(err) = force_gpo_update() {
                 error!("An error occurred while trying to force the GP update: {err}");
             }
 
@@ -161,7 +166,7 @@ pub fn handle_file_changes(
 ///    Retries every five seconds if the write failed.
 fn update_sync_file() {
     let version = match std::fs::read(SYNC_FILE_PATH) {
-        Ok(content) => content.get(0).copied().unwrap_or(0),
+        Ok(content) => content.first().copied().unwrap_or(0),
         Err(_) => 0,
     };
 
@@ -178,6 +183,14 @@ fn update_sync_file() {
     info!("The version of the sync file {SYNC_FILE_PATH} has been set to {version}");
 }
 
+fn extract_gpo_guid_from_path(path: &str) -> Option<String> {
+    path.split("\\Policies\\{")
+        .nth(1)?
+        .split('}')
+        .next()
+        .map(|s| s.to_string())
+}
+
 pub fn generate_registry_pol(
     pol_values: &[String],
     registry_pol_file: &str,
@@ -190,13 +203,28 @@ pub fn generate_registry_pol(
         return Ok(());
     }
 
+    let gpo_guid_option = extract_gpo_guid_from_path(registry_pol_file);
     let registry_pol_file: PathBuf = registry_pol_file.into();
+
+    let gpo_guid = match gpo_guid_option {
+        None => {
+            return Err(anyhow::anyhow!(
+                "Cannot extrat GPO Guid from Regirstry pol file path {}",
+                registry_pol_file.display()
+            ));
+        }
+        Some(guid) => guid,
+    };
+
+    info!("Extracted GPO Guid => {}", gpo_guid);
+
     if registry_pol_file.exists() {
         if let Err(err) = std::fs::remove_file(&registry_pol_file) {
-            error!(
-                "An error occurred while trying to remove file at {}: {err}",
-                registry_pol_file.display()
-            );
+            return Err(anyhow::anyhow!(
+                "An error occurred while trying to remove file at {}: {}",
+                registry_pol_file.display(),
+                err
+            ));
         }
     }
 
@@ -209,8 +237,8 @@ pub fn generate_registry_pol(
         }) = get_registry_policy(pol_value)
         {
             get_powershell_output_lossy(format!(
-                "Set-GPRegistryValue \
-                    -Name Tenable.ad \
+                "Import-Module GroupPolicy; Set-GPRegistryValue \
+                    -Guid '{gpo_guid}' \
                     -Key '{reg_path}' \
                     -ValueName '{reg_value_name}' \
                     -Type {reg_type} \
@@ -348,8 +376,7 @@ fn try_create_channel_key(channel: &String, keys: &Vec<String>) {
 
     let has_key = keys
         .iter()
-        .find(|c| c.to_lowercase() == channel.to_lowercase())
-        .is_some();
+        .any(|c| c.to_lowercase() == channel.to_lowercase());
 
     if has_key {
         info!("Channel '{channel}' already has a registry key.");
@@ -470,10 +497,11 @@ const SETTINGS_NS: &str = "http://www.microsoft.com/GroupPolicy/Settings";
 const AUDITING_NS: &str = "http://www.microsoft.com/GroupPolicy/Settings/Auditing";
 const AUDIT_KEY: &str =
     "[{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
+const LDAP_FILTER: &str = "(&(objectclass=groupPolicyContainer)(!(isDeleted=TRUE))(|(displayName=Tenable.ad)(description=This GPO has been created as part of the deployment of Tenable Identity Exposure. Do not edit.)))";
 const BACKUP_AUDIT_COMMAND: &str = "\
         $domainDn = Get-ADDomain | select -exp DistinguishedName;\
         $tenableGPO = Get-AdObject \
-            -LDAPFilter \"(&(objectClass=groupPolicyContainer)(displayName=Tenable.ad))\" \
+            -LDAPFilter \"__LDAP_FILTER__\" \
             -SearchBase \"CN=Policies,CN=System,$domainDn\" \
             -Properties gPCMachineExtensionNames;\
         $backupGPCMachineExtensionNames = $tenableGPO | select -exp gPCMachineExtensionNames;\
@@ -496,7 +524,7 @@ pub fn generate_audit_csv(
 
     if !audit_folder.exists() {
         return Err(anyhow::anyhow!(
-            "Audit folder {} does not exist",
+            "Audit folder '{}' does not exist",
             audit_folder.display()
         ));
     }
@@ -504,20 +532,17 @@ pub fn generate_audit_csv(
     let audit_csv_path = audit_folder.join("audit.csv");
 
     info!("Backup and remove auditpol CSE");
-    let backup_audit_command = BACKUP_AUDIT_COMMAND.replace("__AUDIT_KEY__", AUDIT_KEY);
-    let backup_gpc_machine_extension_names: String =
-        get_powershell_unicode_output(backup_audit_command)?;
-    let mut backup_gpc_machine_extension_names =
-        backup_gpc_machine_extension_names.trim().to_string();
 
-    info!("Previous value of gPCMachineExtensionNames: {backup_gpc_machine_extension_names}");
+    let backup_audit_command: String = BACKUP_AUDIT_COMMAND
+        .replace("__AUDIT_KEY__", AUDIT_KEY)
+        .replace("__LDAP_FILTER__", LDAP_FILTER);
 
-    if !backup_gpc_machine_extension_names.contains(AUDIT_KEY) {
-        // We need to restore audit key or the Advanced Audit policies will not be applied anymore
-        backup_gpc_machine_extension_names =
-            format!("{}{}", backup_gpc_machine_extension_names, AUDIT_KEY);
-        info!("Adding missing audit key value to gPCMachineExtensionNames: {backup_gpc_machine_extension_names}");
-    }
+    let backup_gPCMachineExtensionNames: String =
+        get_powershell_unicode_output(backup_audit_command)?
+            .trim()
+            .to_string();
+
+    info!("Current value of gPCMachineExtensionNames: {backup_gPCMachineExtensionNames}");
 
     info!(
         "Generating {} on primary domain controller {}",
@@ -532,24 +557,82 @@ pub fn generate_audit_csv(
         generate_audit_csv_file(audit, audit_csv_path, administrator_name)
     });
 
-    info!("Restore auditpol CSE");
-    let _ = get_powershell_output_lossy(format!(
+    match result {
+        Ok(result) => {
+            let patched_gPCMachineExtensionNames = get_patched_gPCMachineExtensionNames(
+                &backup_gPCMachineExtensionNames,
+                result.is_ok(),
+            );
+            let _ = patch_gPCMachineExtensionNames(&patched_gPCMachineExtensionNames)?;
+            result
+        }
+        Err(panic) => {
+            let patched_gPCMachineExtensionNames =
+                get_patched_gPCMachineExtensionNames(&backup_gPCMachineExtensionNames, false);
+            let _ = patch_gPCMachineExtensionNames(&patched_gPCMachineExtensionNames)?;
+            Err(anyhow::anyhow!("A panic occurred: {panic:?}!"))
+        }
+    }
+}
+
+fn get_patched_gPCMachineExtensionNames(
+    gPCMachineExtensionNames: &String,
+    auditCsvGenerationOk: bool,
+) -> String {
+    if !auditCsvGenerationOk {
+        warn!("Audit CSV generation failed, removing audit key from GPO gPCMachineExtensionNames");
+        return gPCMachineExtensionNames.replace(AUDIT_KEY, "");
+    }
+
+    // Audit CSV genereation is OK
+
+    // Check if Audit key are contained in gPCMachineExtensionNames
+    if !gPCMachineExtensionNames.contains(AUDIT_KEY) {
+        // We need to restore audit key or the Advanced Audit policies will not be applied anymore
+        let patchedbackupGPCMachineExtensionNames =
+            sort_gPCMachineExtensionNames(&format!("{}{}", gPCMachineExtensionNames, AUDIT_KEY));
+        info!("Adding missing audit key value to gPCMachineExtensionNames");
+        patchedbackupGPCMachineExtensionNames
+    } else {
+        gPCMachineExtensionNames.to_string()
+    }
+}
+
+fn sort_gPCMachineExtensionNames(input: &str) -> String {
+    let mut pairs = Vec::new();
+    let mut i = 0;
+
+    while let Some(start) = input[i..].find("[{") {
+        let abs_start = i + start;
+        if let Some(end) = input[abs_start..].find("}]") {
+            let abs_end = abs_start + end + 2; // include "}]"
+            pairs.push(&input[abs_start..abs_end]);
+            i = abs_end;
+        } else {
+            break;
+        }
+    }
+
+    pairs.sort_by_key(|pair| pair[2..38].to_uppercase());
+    pairs.concat()
+}
+
+fn patch_gPCMachineExtensionNames(
+    backupGPCMachineExtensionNames: &String,
+) -> anyhow::Result<String> {
+    info!("Restoring auditpol CSE: {backupGPCMachineExtensionNames}");
+    get_powershell_output_lossy(format!(
         "\
         $domainDn = Get-ADDomain | select -exp DistinguishedName;\
         $tenableGPO = Get-AdObject \
-            -LDAPFilter \"(&(objectClass=groupPolicyContainer)(displayName=Tenable.ad))\" \
+            -LDAPFilter \"{LDAP_FILTER}\" \
             -SearchBase \"CN=Policies,CN=System,$domainDn\" \
             -Properties gPCMachineExtensionNames;\
-        $backupGPCMachineExtensionNames = \"{backup_gpc_machine_extension_names}\";\
+        $backupGPCMachineExtensionNames = \"{backupGPCMachineExtensionNames}\";\
         $null = Set-AdObject \
             -Identity $tenableGPO \
             -Replace @{{gPCMachineExtensionNames=$backupGPCMachineExtensionNames}}"
-    ))?;
-
-    match result {
-        Ok(result) => result,
-        Err(panic) => Err(anyhow::anyhow!("A panic occurred: {panic:?}!")),
-    }
+    ))
 }
 
 /// This function generates an audit.csv file to backport custom audit policies (both already
@@ -589,7 +672,7 @@ fn generate_audit_csv_file(
     output_path: PathBuf,
     administrator_name: &str,
 ) -> anyhow::Result<()> {
-    run_command("gpupdate /force")?;
+    force_gpo_update()?;
 
     let temporary_task_folder = tempfile::tempdir()?;
     let temporary_task_folder_path = temporary_task_folder.path().display().to_string();
@@ -599,7 +682,7 @@ fn generate_audit_csv_file(
     // Create the audit.csv with Tenable.ad required logging settings
     let mut audit_csv = String::from("Machine Name,Policy Target,Subcategory,Subcategory GUID,Inclusion Setting,Exclusion Setting,Setting Value\r\n");
     for audit in audit {
-        audit_csv.push_str(&audit);
+        audit_csv.push_str(audit);
         audit_csv.push('\r');
         audit_csv.push('\n');
     }
@@ -690,7 +773,7 @@ fn generate_audit_csv_file(
             };
             if gpresult_value.setting_value == 0 || gpresult_value.setting_value == 4 {
                 return Err(anyhow::anyhow!(format!(
-                    "Tenable.ad requires the audit policy {sub_name} \
+                    "Tenable Identity Exposure requires the audit policy {sub_name} \
                     but the current AD configuration prevents its usage"
                 )));
             }
@@ -721,11 +804,11 @@ fn generate_audit_csv_file(
     }
 
     // Converting existing basic configuration (not needed) to advanced one
-    if adv_audit_policies.len() == 0 {
+    if adv_audit_policies.is_empty() {
         info!("Trying to convert existing basic audit policies to advanced ones");
         let mut basic_audit_policies_to_migrate = vec![];
         for audit_policies_sub_category in auditpol {
-            if audit_policies_sub_category.subcategory_guid != ""
+            if !audit_policies_sub_category.subcategory_guid.is_empty()
                 && !(audit_policies_sub_category.setting_value == Some(0)
                     || audit_policies_sub_category.setting_value == Some(4))
             {
@@ -733,10 +816,12 @@ fn generate_audit_csv_file(
                 let name = audit_policies_sub_category.subcategory;
                 let value = audit_policies_sub_category.setting_value;
                 let not_needed_rsop_value = audit_csv.iter().find(|a| a.subcategory_guid == guid);
-                if let None = not_needed_rsop_value {
+                if not_needed_rsop_value.is_none() {
                     info!(
-                        "Existing audit policy {name} ({guid}) value will be set to {value:?} \
-                        like previously"
+                        "Existing audit policy {} ({}) value will be set to {} like previously",
+                        name,
+                        guid,
+                        value.unwrap() // Type is copy so ok to unwrap here
                     );
                     let new_basic_setting = AuditCsvLine {
                         machine_name: audit_policies_sub_category.machine_name,
@@ -757,7 +842,6 @@ fn generate_audit_csv_file(
     let mut writer = WriterBuilder::new()
         .terminator(Terminator::CRLF)
         .from_path(&output_path)?;
-
     for audit_line in new_audit_csv {
         writer.serialize(audit_line)?;
     }
@@ -819,10 +903,7 @@ fn get_audit_csv_data(audit_csv: String) -> anyhow::Result<Vec<AuditCsvLine>> {
 fn get_current_applied_audit_policies() -> anyhow::Result<Vec<AuditCsvLine>> {
     let retrieve_all_sub_categories = BOOLEAN(0);
     let computer_name = std::env::var("ComputerName");
-    let extracted_machine_name = match computer_name.to_owned() {
-        Ok(s) => s,
-        Err(_) => EMPTY_STRING.to_string(),
-    };
+    let extracted_machine_name = computer_name.unwrap_or_else(|_| EMPTY_STRING.to_string());
     let mut pdw_count_returned: u32 = 0;
     let mut pp_audit_categories_array: *mut GUID = null_mut();
 
@@ -926,10 +1007,7 @@ fn get_current_applied_audit_policies() -> anyhow::Result<Vec<AuditCsvLine>> {
                         existing_audit_policy.subcategory_guid,
                         existing_audit_policy.inclusion_setting,
                         existing_audit_policy.exclusion_setting,
-                        match existing_audit_policy.setting_value {
-                            Some(s) => s,
-                            None => 10, // Abnormal value to pinpoint issue during previous query
-                        },
+                        existing_audit_policy.setting_value.unwrap_or(10),
                     )
                 );
             }
@@ -1068,7 +1146,6 @@ fn get_gpresult_xml_for_user(
     }
 
     if !rsop_file_path.exists() {
-        info!("Generating RSoP file at {rsop_file_path_name} failed");
         return Err(anyhow::anyhow!("RSoP file generation failed"));
     }
 
@@ -1119,91 +1196,12 @@ fn get_adv_audit_policies(gpresult_xml: &Element) -> Option<Vec<&Element>> {
     Some(adv_audit_policies)
 }
 
-fn get_powershell_output<S>(command: S) -> anyhow::Result<String>
-where
-    S: AsRef<OsStr>,
-    S: std::fmt::Display,
-{
-    info!("Run powershell command:\r\n{command}");
-
-    let output = std::process::Command::new("PowerShell")
-        .arg(command)
-        .output()?;
-
-    if !output.status.success() {
-        let error = String::from_utf8(output.stderr)?;
-        return Err(anyhow::anyhow!(error));
-    }
-
-    let stdout = String::from_utf8(output.stdout)?;
-
-    info!("Output of the command:\r\n{stdout}");
-
-    Ok(stdout)
-}
-
-fn get_powershell_output_lossy<S>(command: S) -> anyhow::Result<String>
-where
-    S: AsRef<OsStr>,
-    S: std::fmt::Display,
-{
-    info!("Run powershell command:\r\n{command}");
-
-    let output = std::process::Command::new("PowerShell")
-        .arg(command)
-        .output()?;
-
-    if !output.status.success() {
-        let error = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!(error.to_string()));
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-
-    info!("Output of the command:\r\n{stdout}");
-
-    Ok(stdout)
-}
-
-/// PowerShell's output is a little bit difficult to handle in regards to encoding.
-/// It's a bit of CP437, but when this code page doesn't work, it's falling back to
-/// something else (yet undetermined).
-/// The `get_powershell_unicode_output()` method handles such situations by passing
-/// the PowerShell's command output to a file for which encoding is clearly defined
-/// (UTF8 directly here) thus allowing safe reading.
-///
-/// ⚠️ this method uses a file to get the command's output, it's not recommended
-/// to use it in code's hot paths.
-fn get_powershell_unicode_output<S>(command: S) -> anyhow::Result<String>
-where
-    S: AsRef<OsStr>,
-    S: std::fmt::Display,
-{
-    info!("Run powershell command through tmpfile:\r\n{command}");
-
-    let file_path = tempfile::NamedTempFile::new()?.into_temp_path();
-    let file_path = file_path.to_str().unwrap_or("default.tmp");
-
-    let command =
-        format!("$x = $({command}); [System.IO.File]::WriteAllLines(\"{file_path}\", $x)");
-    info!("\r\nReal command:\r\n{command}");
-
-    let output = std::process::Command::new("PowerShell")
-        .arg("-c")
-        .arg(command)
-        .output()?;
-
-    if !output.status.success() {
-        let error = String::from_utf8(output.stderr)?;
-        return Err(anyhow::anyhow!(error));
-    }
-
-    let stdout = std::fs::read_to_string(file_path)?;
-    let _ = std::fs::remove_file(file_path);
-
-    info!("\r\nOutput of the command:\r\n{stdout}");
-
-    Ok(stdout)
+#[cfg(test)]
+pub fn init_test_logger() {
+    let _ = env_logger::builder()
+        .is_test(true)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init();
 }
 
 #[cfg(test)]
@@ -1221,75 +1219,36 @@ mod tests {
 
     mod handle_file_changes {
         use super::empty_callback;
+        use crate::configuration::{Arguments, EventsLogsConfiguration};
+        use crate::setup::init_test_logger;
+        use crate::sharing::file_sharing_manager::FileSharingManager;
+        use crate::EMPTY_STRING;
         use crate::{
             setup::{handle_file_changes, FileChanged},
-            Arguments, EventLog, EventsLogsConfiguration,
+            EventLog,
         };
-        use std::{collections::HashMap, io::Write, num::NonZeroU8};
+        use std::collections::HashMap;
+        use std::sync::{Arc, Mutex};
         use windows::Win32::System::EventLog::EVT_SUBSCRIBE_CALLBACK;
 
-        const raw_configuration_file_content: &[u8] = br#"{
-  "Events": [
-    {
-      "Id": 541,
-      "ProviderName": "Microsoft-Windows-DNSServer"
-    },
-    {
-      "Id": 4624,
-      "ProviderName": "Microsoft-Windows-Security-Auditing"
-    }
-  ],
-  "Channels": [
-    "Setup"
-  ],
-  "Audit": [],
-  "RegistryValues": [],
-  "PolRegistryValues": []
-}"#;
-
         #[test]
-        fn with_empty_subscribed_channel_handles_should_feed_with_default_and_resquested_channels()
-        {
+        fn with_empty_subscribed_channel_handles_should_feed_with_default_and_requested_channels() {
+            init_test_logger();
             // Create a temporary file for test config.
-            let mut tmp_file = tempfile::NamedTempFile::new()
-                .expect("Unable to create temporary file for the test.");
-            tmp_file
-                .as_file_mut()
-                .write_all(raw_configuration_file_content)
-                .expect("Unable to write in a temporary file for the test.");
-
+            let tmp_file = EventsLogsConfiguration::create_default_configuration_file();
             let mut subscribed_channels: HashMap<String, isize> = HashMap::new();
-            let args = Arguments {
-                event_log_file_path: "./EventLogs.gz".to_string(),
-                timer_duration_seconds: 15,
-                max_buffer_size_bytes: 524288000,
-                max_throughput: 1500,
-                duration_leap: 10,
-                enable_gzip: true,
-                cpu_rate: NonZeroU8::new(20).unwrap(),
-                preview: true,
-                audit_folder: "".into(),
-                administrator_name: "".into(),
-                pdc_name: "".into(),
-                domain_name: "".into(),
-                domain_controller_dns_name: "".into(),
-                gpt_tmpl_file: "".into(),
-                registry_pol_file: "".into(),
-                conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
-                use_xml_render: false,
-            };
+            let args = Arguments::default();
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
-            let mut current_configuration = EventsLogsConfiguration {
-                events: vec![],
-                channels: vec![],
-                audit: vec![],
-                registry_values: vec![],
-                pol_values: vec![],
-            };
+            let mut current_configuration = EventsLogsConfiguration::default();
 
             // Act
             handle_file_changes(
+                &Arc::new(Mutex::new(FileSharingManager::new(
+                    true,
+                    Arguments::default(),
+                    &EventsLogsConfiguration::default(),
+                ))),
                 tmp_file.path(),
                 &mut subscribed_channels,
                 &args,
@@ -1309,50 +1268,26 @@ mod tests {
         }
 
         #[test]
-        fn with_populated_subscribed_channel_handles_should_clear_then_feed_with_default_and_resquested_channels(
+        fn with_populated_subscribed_channel_handles_should_clear_then_feed_with_default_and_requested_channels(
         ) {
+            init_test_logger();
             // Create a temporary file for test config.
-            let mut tmp_file = tempfile::NamedTempFile::new()
-                .expect("Unable to create temporary file for the test.");
-            tmp_file
-                .as_file_mut()
-                .write_all(raw_configuration_file_content)
-                .expect("Unable to write in a temporary file for the test.");
-
+            let tmp_file = EventsLogsConfiguration::create_default_configuration_file();
             let mut subscribed_channels: HashMap<String, isize> = HashMap::new();
             subscribed_channels.insert("ChannelName0".to_string(), 42);
             subscribed_channels.insert("ChannelName1".to_string(), 21);
-            let args = Arguments {
-                event_log_file_path: "./EventLogs.gz".to_string(),
-                timer_duration_seconds: 15,
-                max_buffer_size_bytes: 524288000,
-                max_throughput: 1500,
-                duration_leap: 10,
-                enable_gzip: true,
-                cpu_rate: NonZeroU8::new(20).unwrap(),
-                preview: true,
-                audit_folder: "".into(),
-                administrator_name: "".into(),
-                pdc_name: "".into(),
-                domain_name: "".into(),
-                domain_controller_dns_name: "".into(),
-                gpt_tmpl_file: "".into(),
-                registry_pol_file: "".into(),
-                conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
-                use_xml_render: false,
-            };
+            let args = Arguments::default();
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
-            let mut current_configuration = EventsLogsConfiguration {
-                events: vec![],
-                channels: vec![],
-                audit: vec![],
-                registry_values: vec![],
-                pol_values: vec![],
-            };
+            let mut current_configuration = EventsLogsConfiguration::default();
 
             // Act
             handle_file_changes(
+                &Arc::new(Mutex::new(FileSharingManager::new(
+                    true,
+                    Arguments::default(),
+                    &current_configuration,
+                ))),
                 tmp_file.path(),
                 &mut subscribed_channels,
                 &args,
@@ -1373,13 +1308,9 @@ mod tests {
 
         #[test]
         fn when_new_config_is_equivalent_to_current_should_discard_and_do_nothing() {
+            init_test_logger();
             // Create a temporary file for test config.
-            let mut tmp_file = tempfile::NamedTempFile::new()
-                .expect("Unable to create temporary file for the test.");
-            tmp_file
-                .as_file_mut()
-                .write_all(raw_configuration_file_content)
-                .expect("Unable to write in a temporary file for the test.");
+            let tmp_file = EventsLogsConfiguration::create_default_configuration_file();
 
             let mut subscribed_channels: HashMap<String, isize> = HashMap::new();
 
@@ -1387,25 +1318,7 @@ mod tests {
             subscribed_channels.insert("ChannelName0".to_string(), 42);
             subscribed_channels.insert("ChannelName1".to_string(), 21);
 
-            let args = Arguments {
-                event_log_file_path: "./EventLogs.gz".to_string(),
-                timer_duration_seconds: 15,
-                max_buffer_size_bytes: 524288000,
-                max_throughput: 1500,
-                duration_leap: 10,
-                enable_gzip: true,
-                cpu_rate: NonZeroU8::new(20).unwrap(),
-                preview: true,
-                audit_folder: "".into(),
-                administrator_name: "".into(),
-                pdc_name: "".into(),
-                domain_name: "".into(),
-                domain_controller_dns_name: "".into(),
-                gpt_tmpl_file: "".into(),
-                registry_pol_file: "".into(),
-                conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
-                use_xml_render: false,
-            };
+            let args = Arguments::default();
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
             let mut current_configuration = EventsLogsConfiguration {
@@ -1423,10 +1336,17 @@ mod tests {
                 audit: vec![],
                 registry_values: vec![],
                 pol_values: vec![],
+                smb_mode_activated: false,
+                relay_account_username: EMPTY_STRING.to_string(),
             };
 
             // Act
             handle_file_changes(
+                &Arc::new(Mutex::new(FileSharingManager::new(
+                    false,
+                    Arguments::default(),
+                    &EventsLogsConfiguration::default(),
+                ))),
                 tmp_file.path(),
                 &mut subscribed_channels,
                 &args,
@@ -1437,7 +1357,7 @@ mod tests {
                 true,
             );
 
-            // Assert
+            // Asserts
             // Assert that the HashMap has not been cleared nor fed.
             assert_eq!(subscribed_channels.len(), 2);
             assert!(subscribed_channels.contains_key("ChannelName0"));
@@ -1446,44 +1366,15 @@ mod tests {
 
         #[test]
         fn when_new_config_is_different_from_current_should_apply_it_and_store_new_config() {
+            init_test_logger();
             // Create a temporary file for test config.
-            let mut tmp_file = tempfile::NamedTempFile::new()
-                .expect("Unable to create temporary file for the test.");
-            tmp_file
-                .as_file_mut()
-                .write_all(raw_configuration_file_content)
-                .expect("Unable to write in a temporary file for the test.");
-
+            let tmp_file = EventsLogsConfiguration::create_default_configuration_file();
             let mut subscribed_channels: HashMap<String, isize> = HashMap::new();
 
-            let args = Arguments {
-                event_log_file_path: "./EventLogs.gz".to_string(),
-                timer_duration_seconds: 15,
-                max_buffer_size_bytes: 524288000,
-                max_throughput: 1500,
-                duration_leap: 10,
-                enable_gzip: true,
-                cpu_rate: NonZeroU8::new(20).unwrap(),
-                preview: true,
-                audit_folder: "".into(),
-                administrator_name: "".into(),
-                pdc_name: "".into(),
-                domain_name: "".into(),
-                domain_controller_dns_name: "".into(),
-                gpt_tmpl_file: "".into(),
-                registry_pol_file: "".into(),
-                conf_interval_in_minutes: NonZeroU8::new(5).unwrap(),
-                use_xml_render: false,
-            };
+            let args = Arguments::default();
             let callback: EVT_SUBSCRIBE_CALLBACK = Some(empty_callback);
             let current_build_number = Some(42);
-            let mut current_configuration = EventsLogsConfiguration {
-                events: vec![],
-                channels: vec![],
-                audit: vec![],
-                registry_values: vec![],
-                pol_values: vec![],
-            };
+            let mut current_configuration = EventsLogsConfiguration::default();
             let expected_configuration = EventsLogsConfiguration {
                 events: vec![
                     EventLog {
@@ -1499,10 +1390,17 @@ mod tests {
                 audit: vec![],
                 registry_values: vec![],
                 pol_values: vec![],
+                smb_mode_activated: false,
+                relay_account_username: EMPTY_STRING.to_string(),
             };
 
             // Act
             handle_file_changes(
+                &Arc::new(Mutex::new(FileSharingManager::new(
+                    true,
+                    Arguments::default(),
+                    &EventsLogsConfiguration::default(),
+                ))),
                 tmp_file.path(),
                 &mut subscribed_channels,
                 &args,
@@ -1588,7 +1486,7 @@ mod tests {
             let audit_csv_temp_file_path = temp_dir().as_path().join("audit.csv");
             let audit_csv_temp_file_path_name = audit_csv_temp_file_path.to_string_lossy();
 
-            _ = run_command(format!(
+            let _ = run_command(format!(
                 "auditpol.exe /backup /file:\"{audit_csv_temp_file_path_name}\""
             ));
 
@@ -1601,7 +1499,7 @@ mod tests {
 
             let audit_policies_windows_apis = get_current_applied_audit_policies().unwrap();
 
-            assert!(audit_policies_windows_apis.len() == auditpol_output.len());
+            assert_eq!(audit_policies_windows_apis.len(), auditpol_output.len());
 
             let check_all_vec_values = audit_policies_windows_apis.iter().all(|f| {
                 auditpol_output
@@ -1613,40 +1511,123 @@ mod tests {
         }
     }
 
-    mod powershell {
+    mod extract_gpo_guid_from_path {
+        use super::super::*;
+        #[test]
+        fn it_should_extract_the_gpo_guid_from_pol_file_path() {
+            let guid_st = "ad9f25ab-5c6e-4501-a129-1d1dfb3bae5e";
+            let path = format!("\\\\Server2022.alsid.com\\sysvol\\alsid.com\\Policies\\{{{}}}\\Machine\\Registry.pol", guid_st);
+            let result = extract_gpo_guid_from_path(&path);
+            assert!(result.is_some());
+            assert_eq!(guid_st, result.unwrap());
+        }
+
+        #[test]
+        fn when_path_is_invalid_it_should_return_none() {
+            let path = "Not\\A\\Valid\\Path";
+            let result = extract_gpo_guid_from_path(&path);
+            assert!(result.is_none());
+        }
+    }
+
+    mod patch_gPCMachineExtensionNames {
+        use super::super::*;
+
+        const audit_applied_gPCMachineExtensionNames: &str = "[{00000000-0000-0000-0000-000000000000}{CAB54552-DEEA-4691-817E-ED4A4D1AFC72}][{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}][{827D319E-6EAC-11D2-A4EA-00C04F79F83A}{803E14A0-B4FB-11D0-A0D0-00A0C90F574B}][{AADCED64-746C-4633-A97C-D61349046527}{CAB54552-DEEA-4691-817E-ED4A4D1AFC72}][{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
+        fn get_audit_not_applied_gPCMachineExtensionNames() -> String {
+            audit_applied_gPCMachineExtensionNames.replace(AUDIT_KEY, "")
+        }
+        const auditCsvGenerationNoOk: bool = false;
+        const auditCsvGenerationOk: bool = !auditCsvGenerationNoOk;
+
+        #[test]
+        fn when_audit_csv_geneation_failed_it_should_remove_audit_key_from() {
+            // Act
+            let patched = get_patched_gPCMachineExtensionNames(
+                &audit_applied_gPCMachineExtensionNames.to_string(),
+                auditCsvGenerationNoOk,
+            );
+
+            // Assert
+            assert_eq!(get_audit_not_applied_gPCMachineExtensionNames(), patched);
+        }
+
+        #[test]
+        fn when_audit_csv_geneation_failed_and_no_audit_key_then_keep_untouched() {
+            // Arrange
+            let noAudit = get_audit_not_applied_gPCMachineExtensionNames();
+
+            // Act
+            let patched = get_patched_gPCMachineExtensionNames(&noAudit, auditCsvGenerationNoOk);
+
+            // Assert
+            assert_eq!(noAudit, patched);
+        }
+
+        #[test]
+        fn when_audit_csv_geneation_Ok_and_no_audit_key_then_add_audit_key() {
+            // Arrange
+            let noAudit = get_audit_not_applied_gPCMachineExtensionNames();
+
+            // Act
+            let patched = get_patched_gPCMachineExtensionNames(&noAudit, auditCsvGenerationOk);
+
+            // Assert
+            assert_eq!(audit_applied_gPCMachineExtensionNames, patched);
+        }
+
+        #[test]
+        fn when_audit_csv_geneation_Ok_and_audit_key_present_then_keep_untouched() {
+            // Act
+            let patched = get_patched_gPCMachineExtensionNames(
+                &audit_applied_gPCMachineExtensionNames.to_string(),
+                auditCsvGenerationOk,
+            );
+
+            // Assert
+            assert_eq!(audit_applied_gPCMachineExtensionNames, patched);
+        }
+    }
+
+    mod sort_gPCMachineExtensionNames {
         use super::super::*;
 
         #[test]
-        fn ensure_ps_unicode_is_handling_non_ascii() {
-            let test_str = "This is à tèst with non-ASCI£ charact€rs 🐼";
-            let test_command = format!("Write-Output '{test_str}'");
+        fn when_not_sorted_then_sort() {
+            // Arrange
+            let input = "[{23CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{B3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{43CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
 
-            let output = get_powershell_unicode_output(test_command).unwrap();
-            let output = output.trim();
+            // Act
+            let sorted = sort_gPCMachineExtensionNames(input);
 
-            assert_eq!(test_str, output);
+            // Assert
+            let expected = "[{23CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{43CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{B3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
+            assert_eq!(expected, sorted);
         }
 
         #[test]
-        fn ensure_ps_unicode_is_handling_ascii_as_get_ps_output() {
-            let test_str = "This is an ASCII test only (keep $$$ secured)";
-            let test_command = format!("Write-Output '{test_str}'");
+        fn when_not_sorted_then_sort_2() {
+            // Arrange
+            let input = "[{23CCC681-B74C-4060-9F26-CD84525DCA2B}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{23CCC681-B74C-4060-9F26-CD84525DCA2A}{1F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
 
-            let output1 = get_powershell_unicode_output(&test_command).unwrap();
-            let output2 = get_powershell_output(&test_command).unwrap();
+            // Act
+            let sorted = sort_gPCMachineExtensionNames(input);
 
-            assert_eq!(output1, output2);
+            // Assert
+            let expected = "[{23CCC681-B74C-4060-9F26-CD84525DCA2A}{1F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{23CCC681-B74C-4060-9F26-CD84525DCA2B}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
+            assert_eq!(expected, sorted);
         }
 
         #[test]
-        fn ps_unicode_should_return_error_when_ps_command_is() {
-            let result1 = get_powershell_unicode_output(
-                "foobarbazquxquux - this shouldn't be a valid PS command",
-            );
-            let result2 = get_powershell_unicode_output("Write-Error 'Well...'");
+        fn when_not_sorted_then_sort_3() {
+            // Arrange
+            let input = "[{23CCC681-B74C-4060-9F26-CD84525DCA2A}{1F3F3735-573D-9804-99E4-AB2A69BA5FD4}][{23CCC681-B74C-4060-9F26-CD84525DCA2B}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]";
 
-            assert!(result1.is_err());
-            assert!(result2.is_err());
+            // Act
+            let sorted = sort_gPCMachineExtensionNames(input);
+
+            // Assert
+            assert_eq!(input, sorted);
         }
     }
 }

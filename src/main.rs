@@ -1,11 +1,11 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 
-use chrono::{DateTime, Duration, Local, Utc};
+use crate::configuration::EventsLogsConfiguration;
+use chrono::{DateTime, Duration, Local, SecondsFormat, Utc};
 use clap::Parser;
 use core::ffi::c_void;
 use env_logger::{Builder, Target};
-use flate2::{write::GzEncoder, Compression};
 use gag::BufferRedirect;
 use gethostname::gethostname;
 use log::{error, info, warn, LevelFilter};
@@ -14,14 +14,16 @@ use minidom::Element;
 use notify::{Error, Event, ReadDirectoryChangesWatcher, Result as NotifyResult, Watcher};
 use serde::Deserialize;
 use state::Storage;
+use std::process::ExitCode;
+use std::ptr::null_mut;
+use std::sync::Arc;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     env::{current_dir, temp_dir, VarError},
     ffi::OsString,
     fs::{self, create_dir},
     io::{Read, Write},
     num::NonZeroU8,
-    os::windows::prelude::OpenOptionsExt,
     path::{Path, PathBuf},
     sync::{
         mpsc::{channel, Receiver, Sender, TryRecvError},
@@ -31,17 +33,19 @@ use std::{
     time::{Duration as StdTimeDuration, Instant},
 };
 use timer::Timer;
-use windows::Win32::Foundation::{CloseHandle, HANDLE};
+use windows::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HANDLE};
 use windows::Win32::Security;
-use windows::Win32::Storage::FileSystem;
 use windows::Win32::System::EventLog::*;
 use windows::Win32::System::JobObjects;
 use windows::Win32::System::Threading;
+use windows::Win32::System::Threading::CreateMutexA;
 use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
 
 mod channel;
+mod configuration;
 mod helpers;
+mod powershell;
 mod render_event {
     pub mod using_values;
     pub mod using_xml;
@@ -49,10 +53,13 @@ mod render_event {
 mod constants;
 use constants::*;
 mod setup;
+mod sharing;
+use crate::configuration::Arguments;
+use crate::powershell::force_gpo_update;
+use crate::sharing::file_sharing_manager::FileSharingManager;
 use setup::{
     generate_audit_csv, generate_gpt_tmpl_inf, generate_registry_pol, handle_file_changes,
-    log_configuration, read_setup_from_file, run_command, subscribe_to_channels, FileChanged,
-    SYNC_FILE_PATH,
+    log_configuration, subscribe_to_channels, FileChanged, SYNC_FILE_PATH,
 };
 
 const EVT_RENDER_FLAG_EVENT_XML: u32 = EvtRenderEventXml.0 as u32;
@@ -61,6 +68,7 @@ const ZERO_STRING: &str = "0";
 const EVENT_LOGS_COUNT_LEAP: u32 = 1000; // Event logs counter leap to wait
 const DEFAULT_CONFIGURATION_FILE_PATH: &str = "./TenableADEventsListenerConfiguration.json";
 const ONE_MINUTE: StdTimeDuration = StdTimeDuration::from_secs(60);
+const DEBOUNCE_FS_DELAY: StdTimeDuration = StdTimeDuration::from_millis(100);
 
 static mut MAX_MEMORY_SIZE_BYTES: usize = 524288000; // Maximum listener memory size
 static mut MAX_THROUGHPUT: f32 = 1500.0; // Maximum throughput, in events per second
@@ -71,6 +79,7 @@ static mut EVENT_LOGS_COUNT: u32 = 0; // Event logs counter
 static BUFFER: Storage<Mutex<Vec<u8>>> = Storage::new(); // Buffer to store event logs momentarily
 static LOG_BUFFER: Storage<Mutex<BufferRedirect>> = Storage::new(); // Buffer to store logs momentarily
 static mut XML_RENDER_ENABLED: bool = false; // Allows to use legacy xml render
+static mut MAX_MEMORY_LOG_SWITCH: bool = true; // Allows to log when max memory reached
 
 #[derive(Deserialize, PartialEq, Eq, Hash)]
 pub struct EventLog {
@@ -81,183 +90,80 @@ pub struct EventLog {
     provider_name: String,
 }
 
-#[derive(Deserialize)]
-pub struct EventsLogsConfiguration {
-    #[serde(alias = "Events", alias = "events")]
-    events: Vec<EventLog>,
-
-    #[serde(alias = "Channels", alias = "channels")]
-    channels: Vec<String>,
-
-    #[serde(alias = "Audit", alias = "audit")]
-    audit: Vec<String>,
-
-    #[serde(alias = "RegistryValues", alias = "registryValues")]
-    registry_values: Vec<String>,
-
-    #[serde(alias = "PolRegistryValues", alias = "polRegistryValues")]
-    pol_values: Vec<String>,
-}
-
-impl PartialEq for EventsLogsConfiguration {
-    fn eq(&self, other: &Self) -> bool {
-        let self_events: HashSet<&EventLog> = self.events.iter().collect();
-        let self_channels: HashSet<&String> = self.channels.iter().collect();
-        let self_audit: HashSet<&String> = self.audit.iter().collect();
-        let self_registry_values: HashSet<&String> = self.registry_values.iter().collect();
-        let self_pol_values: HashSet<&String> = self.pol_values.iter().collect();
-
-        let other_events: HashSet<&EventLog> = other.events.iter().collect();
-        let other_channels: HashSet<&String> = other.channels.iter().collect();
-        let other_audit: HashSet<&String> = other.audit.iter().collect();
-        let other_registry_values: HashSet<&String> = other.registry_values.iter().collect();
-        let other_pol_values: HashSet<&String> = other.pol_values.iter().collect();
-
-        self_events == other_events
-            && self_channels == other_channels
-            && self_audit == other_audit
-            && self_registry_values == other_registry_values
-            && self_pol_values == other_pol_values
+fn try_log_current_user(machine_name: &String) {
+    if let Ok(username) = std::env::var("USERNAME") {
+        if !username.is_empty() {
+            let user_display = if username == format!("{machine_name}$") {
+                "SYSTEM".to_string()
+            } else {
+                username
+            };
+            info!("Current user: {user_display}");
+        }
+    } else {
+        warn!("Cannot retrieve current user running this program");
     }
 }
 
-#[derive(Parser, Debug)]
-#[clap(
-    about = "This command launches an event listener, which forwards each received event to an internal memory buffer. This buffer is flushed to the disk periodically."
-)]
-pub struct Arguments {
-    #[clap(
-        short = 'p',
-        long = "EventLogFilePath",
-        help = "The file where events are written"
-    )]
-    event_log_file_path: String,
+/// Ensure only one instance of our program can only ever run simultaneously
+///
+/// This is done using global mutexes in Windows
+fn try_acquire_process_lock(pid: u32) -> bool {
+    unsafe {
+        let prog_name = env!("CARGO_PKG_NAME");
+        // "Global" ensures the mutex is in the Global namespace
+        let global_mutex_name = format!("Global\\{}Mutex", &prog_name);
+        let global_process_mutex = CreateMutexA(
+            null_mut(),
+            true, // Request immediate ownership
+            global_mutex_name.clone(),
+        );
 
-    #[clap(
-        short = 't',
-        long = "TimerDurationSeconds",
-        help = "The interval between each file write"
-    )]
-    timer_duration_seconds: u32,
+        if global_process_mutex.is_err() {
+            error!("Execution attempt failed from PID {}: Failed to create global mutex '{}' to ensure single running process. Is '{}.exe' already running ?",
+                pid, global_mutex_name, prog_name);
+            return false;
+        }
 
-    #[clap(
-        short = 'b',
-        long = "MaxBufferSizeBytes",
-        default_value = "524288000",
-        help = "The maximum buffer size in bytes"
-    )]
-    max_buffer_size_bytes: usize,
-
-    #[clap(
-        short = 's',
-        long = "MaxThroughput",
-        default_value = "1500",
-        help = "The maximum handled throughput, in event logs per second"
-    )]
-    max_throughput: u32,
-
-    #[clap(
-        short = 'd',
-        long = "DurationLeapMilliSeconds",
-        default_value = "10",
-        help = "The duration leap to adjust events logs consumption throughput, in milliseconds"
-    )]
-    duration_leap: u64,
-
-    #[clap(
-        short = 'g',
-        long = "EnableGzip",
-        action,
-        help = "Whether GZip compression is enabled"
-    )]
-    enable_gzip: bool,
-
-    #[clap(
-        short = 'r',
-        long = "CpuRate",
-        default_value = "20",
-        help = "Control the CPU rate of the process (does not work on Windows Sever 2008R2 and below)"
-    )]
-    cpu_rate: NonZeroU8,
-
-    #[clap(
-        short = 'w',
-        long = "Preview",
-        action,
-        help = "Enable preview features"
-    )]
-    preview: bool,
-
-    #[clap(
-        short = 'f',
-        long = "AuditFolder",
-        help = "Path of the folder containing the audit.csv file in the GPO"
-    )]
-    audit_folder: String,
-
-    #[clap(
-        short = 'a',
-        long = "AdministratorName",
-        help = "Name of the administrator account that can be used to execute some operations"
-    )]
-    administrator_name: String,
-
-    #[clap(short = 'i', long = "PdcName", help = "Name of the PDC")]
-    pdc_name: String,
-
-    #[clap(short = 'y', long = "DomainName", help = "Name of the domain")]
-    domain_name: String,
-
-    #[clap(
-        short = 'z',
-        long = "DomainControllerDnsName",
-        help = "DNS name of the domain controller"
-    )]
-    domain_controller_dns_name: String,
-
-    #[clap(
-        short = 'x',
-        long = "GptTmplFile",
-        help = "Path of the GptTmpl.inf file in the GPO"
-    )]
-    gpt_tmpl_file: String,
-
-    #[clap(
-        short = 'l',
-        long = "RegistryPolFile",
-        help = "Path of the Registry.pol file in the GPO"
-    )]
-    registry_pol_file: String,
-
-    #[clap(
-        long = "ConfigurationUpdateIntervalInMinutes",
-        default_value = "5",
-        help = "Minimum interval between each configuration update"
-    )]
-    conf_interval_in_minutes: NonZeroU8,
-
-    #[clap(
-        long = "UseXmlEventRender",
-        help = "Allows to use the legacy XML event rendering method for listeners. Although slower than the current values-based approach, it provides greater stability. This option is disabled by default."
-    )]
-    pub(crate) use_xml_render: bool,
+        if GetLastError() == ERROR_ALREADY_EXISTS {
+            error!("Execution attempt failed from PID {}: Another instance of the program is already running. Please close it before proceeding", pid);
+            return false;
+        }
+    }
+    // We don't need to hold the mutex, it will get closed on process termination
+    // See https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa
+    return true;
 }
 
-fn main() {
-    let log_file_path = setup_log();
-    info!("*****************************************************************************");
-    info!("Starting event logs listener...");
-    info!("Version: {}", VERSION);
-
-    try_flush_log_buffer(log_file_path.clone());
-
+fn main() -> ExitCode {
+    let process_id = std::process::id();
     let args = match Arguments::try_parse() {
         Ok(args) => args,
         Err(err) => {
+            // Still try to initialize the log_file so we can have the error logged there
+            let log_file_path = setup_log(false);
             error!("An error occurred while trying to parse the arguments: {err}");
-            err.exit();
+            // Gives direct feedback to user running the program in console
+            eprintln!("An error occurred while trying to parse the arguments: {err}");
+            try_flush_log_buffer(log_file_path);
+            return ExitCode::FAILURE;
         }
     };
+
+    let log_file_path = setup_log(args.debug);
+
+    if !try_acquire_process_lock(process_id) {
+        // Print error for direct feedback if in console
+        eprintln!("This program is already running in another process. Only a single instance can run at a time");
+        try_flush_log_buffer(log_file_path);
+        return ExitCode::FAILURE;
+    }
+
+    info!("*****************************************************************************");
+    info!("Starting event logs listener - PID {}...", process_id);
+    info!("Version: {}", VERSION);
+
+    try_flush_log_buffer(log_file_path.clone());
 
     let enable_gzip = args.enable_gzip;
     let event_log_file_path = args.event_log_file_path.clone();
@@ -269,16 +175,17 @@ fn main() {
     let administrator_name = args.administrator_name.clone();
     let conf_interval = ONE_MINUTE * args.conf_interval_in_minutes.get() as u32;
 
-    let is_pdc = match is_pdc(args.pdc_name.as_str()) {
-        Ok(v) => v,
-        Err(err) => {
-            error!(
-                "An error occurred while trying to check if the current computer is the PDC, \
-                it will be considered as a normal DC: {err}"
-            );
-            false
-        }
-    };
+    let machine_name = std::env::var("ComputerName").unwrap_or_else(|_| {
+        warn!("Cannot retrieve current computer name");
+        return EMPTY_STRING.to_string();
+    });
+    let is_pdc = is_pdc(args.pdc_name.as_str(), &machine_name).unwrap_or_else(|err| {
+        error!("An error occurred while trying to check if the current computer is the PDC, it will be considered as a normal DC: {err}");
+        false
+    });
+
+    try_log_current_user(&machine_name);
+    try_flush_log_buffer(log_file_path.clone());
 
     unsafe {
         PREVIEW = args.preview;
@@ -298,37 +205,75 @@ fn main() {
     let path = Path::new(DEFAULT_CONFIGURATION_FILE_PATH);
     wait_for_setup_file(path);
 
-    let (mut configuration_file_json, configuration_file_content) = match read_setup_from_file(path)
-    {
-        Ok(result) => result,
-        Err(err) => {
-            // TODO: Add a retry mechanism?
-            error!("An error occurred while reading the setup file: {err}");
-            std::process::exit(err.raw_os_error().unwrap_or(1));
-        }
-    };
+    let (mut configuration_file_json, configuration_file_content) =
+        match EventsLogsConfiguration::read_setup_from_file(path) {
+            Ok(result) => result,
+            Err(err) => {
+                // TODO: Add a retry mechanism?
+                error!("An error occurred while reading the setup file: {err:?}");
+                try_flush_log_buffer(log_file_path.clone());
+                return ExitCode::FAILURE;
+            }
+        };
 
     log_configuration(configuration_file_content, &args);
 
     set_processor_limit(cpu_rate);
 
+    // File sharing management
+    let file_sharing_manager = Arc::new(Mutex::new(FileSharingManager::new(
+        is_pdc,
+        args.clone(),
+        &configuration_file_json,
+    )));
+    match file_sharing_manager
+        .lock()
+        .unwrap()
+        .start(is_pdc, &configuration_file_json)
+    {
+        Ok(()) => info!("File sharing is operational !"),
+        Err(setupErr) => {
+            error!(
+                "A '{:?}' error occurred while trying to setup file sharing: {}",
+                setupErr.error, setupErr.description
+            );
+            try_flush_log_buffer(log_file_path.clone());
+            return ExitCode::FAILURE;
+        }
+    }
+
     // Flush
     try_flush_log_buffer(log_file_path.clone());
     let timer = Timer::new();
     let log_file_path_clone = log_file_path.clone();
+    let shared_file_manager = Arc::clone(&file_sharing_manager);
     let _timer_guard =
         timer.schedule_repeating(Duration::seconds(duration_as_integer), move || {
             let mut buffer_content = match BUFFER.get().lock() {
                 Ok(b) => b,
                 Err(err) => {
                     error!("Error occurred during buffer retrieval: {err:?}");
+                    // If we can't retrieve the log buffer lock, we may not be able to log the error in the log file at all
+                    eprintln!("Error occurred during log buffer retrieval: {err:?}");
                     return;
                 }
             };
 
-            try_adjust_throughput(&duration_as_float);
-
-            flush_events_to_file(&enable_gzip, &event_log_file_path, &buffer_content);
+            // Here we use a block to limit the lifetime of the lock guard.
+            {
+                let mut curr_file_sharing_manager = shared_file_manager.lock().unwrap();
+                // For now, we will simply log errors
+                if let Err(send_file_err) = curr_file_sharing_manager.send_file(
+                    &enable_gzip,
+                    &event_log_file_path,
+                    &buffer_content,
+                ) {
+                    error!(
+                        "[{:?}] Error while sending event logs file: {}",
+                        send_file_err.error, send_file_err.description
+                    );
+                }
+            }
 
             buffer_content.clear();
             buffer_content.shrink_to_fit();
@@ -379,8 +324,7 @@ fn main() {
 
     try_flush_log_buffer(log_file_path.clone());
 
-    // Force gpupdate
-    if let Err(err) = run_command("gpupdate /force") {
+    if let Err(err) = force_gpo_update() {
         error!("An error occurred while trying to force the GP update: {err}");
     }
 
@@ -406,24 +350,26 @@ fn main() {
     let _file_watchers = if is_pdc {
         let config_watcher_sender = channel_sender.clone();
 
-        let config_watcher_result =
-            notify::recommended_watcher(move |res: NotifyResult<Event>| match res {
+        let mut last_event_received_time = Instant::now();
+        let config_watcher_result = notify::recommended_watcher(move |res: NotifyResult<Event>| {
+            match res {
                 Ok(event) if event.kind.is_modify() => {
-                    info!("Received notification about changes on the configuration file");
-                    if let Err(e) = config_watcher_sender.send(()) {
-                        error!(
-                            "An error has occured while trying to send change notification: {e}"
-                        );
+                    if last_event_received_time.elapsed() > DEBOUNCE_FS_DELAY {
+                        last_event_received_time = Instant::now();
+                        info!("Received notification about changes on the configuration file");
+                        if let Err(e) = config_watcher_sender.send(()) {
+                            error!("An error has occurred while trying to send change notification: {e}");
+                        }
                     }
                 }
                 Ok(_) => info!(
-                    "configuration file has been touched but not modified, \
-                    there is not changes to apply."
+                    "Configuration file has been touched but not modified, no changes to apply."
                 ),
                 Err(e) => {
                     error!("An error has occurred while watching configuration file changes: {e}")
                 }
-            });
+            }
+        });
 
         let config_watcher = setup_file_to_watch(path, config_watcher_result);
         vec![config_watcher]
@@ -433,7 +379,7 @@ fn main() {
 
     // Service loop
     info!("Listening to event logs...");
-    try_flush_log_buffer(log_file_path);
+    try_flush_log_buffer(log_file_path.clone());
     if is_pdc {
         let mut last_event = None;
 
@@ -448,7 +394,10 @@ fn main() {
                         );
                         last_event = Some(Instant::now());
                     }
-                    _ => {}
+                    _ => info!(
+                        "A configuration update is already scheduled for execution in approximately {} seconds",
+                        (conf_interval - last_event.unwrap().elapsed()).as_secs()
+                    )
                 },
                 Err(TryRecvError::Disconnected) => {
                     error!("An error has occurred while trying to receive file changes notification, configuration will not be updated");
@@ -465,6 +414,7 @@ fn main() {
 
             if should_fire {
                 handle_file_changes(
+                    &file_sharing_manager,
                     path,
                     &mut subscribed_channels,
                     &args,
@@ -486,7 +436,7 @@ fn main() {
         loop {
             thread::sleep(conf_interval);
 
-            let new_version = match std::fs::read(SYNC_FILE_PATH) {
+            let new_version = match fs::read(SYNC_FILE_PATH) {
                 Ok(content) => Some(content),
                 Err(_) => None,
             };
@@ -498,6 +448,7 @@ fn main() {
                 );
 
                 handle_file_changes(
+                    &file_sharing_manager,
                     path,
                     &mut subscribed_channels,
                     &args,
@@ -544,20 +495,24 @@ fn try_flush_log_buffer(log_file_path: PathBuf) {
         }
     };
 
-    let _write_result = log_file_open_result.write_all(output.as_bytes());
+    let _ = log_file_open_result.write_all(output.as_bytes());
 }
 
-fn setup_log() -> PathBuf {
-    let log_level: LevelFilter = LevelFilter::Info;
+fn setup_log(debug: bool) -> PathBuf {
+    let log_level: LevelFilter = match debug {
+        true => LevelFilter::Debug,
+        false => LevelFilter::Info,
+    };
 
-    let _builder = Builder::new()
+    Builder::new()
         .target(Target::Stdout)
         .filter_level(log_level)
         .format(|buf, record| {
             writeln!(
                 buf,
                 "{} [{}] {}",
-                Local::now().to_rfc3339(),
+                // Used instead of "to_rfc3339" to have a fixed format
+                Local::now().to_rfc3339_opts(SecondsFormat::Millis, false),
                 record.level(),
                 record.args()
             )
@@ -716,6 +671,15 @@ unsafe extern "system" fn subscription_callback(
                     if (m.physical_mem >= MAX_MEMORY_SIZE_BYTES)
                         || (m.virtual_mem >= MAX_MEMORY_SIZE_BYTES)
                     {
+                        if MAX_MEMORY_LOG_SWITCH {
+                            error!(
+                                "Max Memory reached physical_mem:{} or virtual_mem: {} >= {}",
+                                m.physical_mem, m.virtual_mem, MAX_MEMORY_SIZE_BYTES
+                            );
+                            // Deactivate the switch to avoid logging many times the same error
+                            MAX_MEMORY_LOG_SWITCH = false;
+                        }
+
                         return 1;
                     }
                 }
@@ -738,91 +702,35 @@ unsafe extern "system" fn subscription_callback(
 
                     acquired_vec_state.extend(event_bytes);
 
-                    if !SLEEP_DURATION.is_zero() {
-                        wait();
+                    EVENT_LOGS_COUNT += 1;
+                    // Re-Enable the switch when a message is processed
+                    if !MAX_MEMORY_LOG_SWITCH {
+                        match memory_stats() {
+                            Some(m) => {
+                                info!("Starting to reprocess message after max memory reached physical_mem:{} or virtual_mem: {}", m.physical_mem, m.virtual_mem);
+                            }
+                            None => {}
+                        }
+                        MAX_MEMORY_LOG_SWITCH = true;
                     }
-                    EVENT_LOGS_COUNT = EVENT_LOGS_COUNT + 1;
                     0
                 }
-                Err(_e) => 1,
+                Err(_e) => {
+                    error!("BUFFER Mutex was poisoned, resetting...");
+                    let mut inner = _e.into_inner();
+                    inner.clear();
+                    0
+                }
             }
         }
-        EvtSubscribeActionError => 1,
-        _ => 1,
-    }
-}
-
-fn flush_events_to_file(enable_gzip: &bool, file_path: &String, file_content: &Vec<u8>) {
-    if file_content.is_empty() {
-        return;
-    }
-
-    let sharing_mode = FileSystem::FILE_SHARE_READ | FileSystem::FILE_SHARE_WRITE;
-    let events_file_open = fs::File::options()
-        .create(true)
-        .read(true)
-        .write(true)
-        .truncate(true)
-        .share_mode(sharing_mode.0)
-        .open(file_path);
-
-    let mut events_file = match events_file_open {
-        Ok(f) => f,
-        Err(_e) => return,
-    };
-
-    if *enable_gzip {
-        let mut gz_encoder = GzEncoder::new(Vec::new(), Compression::default());
-
-        let _compress_result = match gz_encoder.write_all(&file_content) {
-            Ok(c) => c,
-            Err(_e) => return,
-        };
-
-        let final_gz_stream = match gz_encoder.finish() {
-            Ok(c) => c,
-            Err(_e) => return,
-        };
-        let _write_gz_result = events_file.write_all(&final_gz_stream);
-
-        return;
-    }
-
-    let _write_result = events_file.write_all(&file_content);
-}
-
-fn try_adjust_throughput(duration_as_float: &f32) {
-    unsafe {
-        let current_throughput = EVENT_LOGS_COUNT as f32 / duration_as_float;
-
-        if current_throughput > MAX_THROUGHPUT {
-            SLEEP_DURATION = match SLEEP_DURATION.checked_add(DURATION_LEAP) {
-                Some(d) => d,
-                None => SLEEP_DURATION,
-            };
-            try_log_sleep_adjust(current_throughput);
-        } else if !SLEEP_DURATION.is_zero() && current_throughput < MAX_THROUGHPUT {
-            SLEEP_DURATION = match SLEEP_DURATION.checked_sub(DURATION_LEAP) {
-                Some(d) => d,
-                None => SLEEP_DURATION,
-            };
-            try_log_sleep_adjust(current_throughput);
+        EvtSubscribeActionError => {
+            error!("Got Error notify action");
+            1
         }
-
-        EVENT_LOGS_COUNT = 0;
-    }
-}
-
-fn try_log_sleep_adjust(current_throughput: f32) {
-    unsafe {
-        if current_throughput < (MAX_THROUGHPUT + 500.0) {
-            return;
+        EVT_SUBSCRIBE_NOTIFY_ACTION(e) => {
+            error!("Got unknown notify action '{}'", e);
+            1
         }
-
-        let sleep_duration_millis = SLEEP_DURATION.as_millis();
-        info!(
-            "Dynamic sleep adjusted to {sleep_duration_millis} milliseconds, current throughput: {current_throughput} evts/sec."
-        );
     }
 }
 
@@ -888,11 +796,16 @@ fn add_start_event(buffer: &mut Vec<u8>, now: DateTime<Utc>) {
 }
 
 fn wait_for_setup_file(path: &Path) {
-    info!("Start waiting for configuration file to be available at path: '{DEFAULT_CONFIGURATION_FILE_PATH}'...");
+    if path.exists() {
+        info!("Configuration file available at path: '{DEFAULT_CONFIGURATION_FILE_PATH}'");
+        return;
+    }
 
+    info!("Start waiting for configuration file to be available at path: '{DEFAULT_CONFIGURATION_FILE_PATH}'...");
     while !path.exists() {
         thread::sleep(std::time::Duration::from_secs(1));
     }
+    info!("Configuration file finally available at path: '{DEFAULT_CONFIGURATION_FILE_PATH}'");
 }
 
 fn setup_file_to_watch(
@@ -917,119 +830,23 @@ fn setup_file_to_watch(
     }
 }
 
-fn is_pdc(pdc_name: &str) -> Result<bool, VarError> {
-    let current_name = std::env::var("ComputerName")?;
+fn is_pdc(pdc_name: &str, machine_name: &String) -> Result<bool, VarError> {
+    if machine_name.is_empty() {
+        return Err(VarError::NotPresent);
+    }
 
-    info!("The name of the current computer is '{current_name}'");
+    let is_pdc = machine_name.to_ascii_lowercase() == pdc_name.to_ascii_lowercase();
 
-    let is_pdc = current_name.to_ascii_lowercase() == pdc_name.to_ascii_lowercase();
+    info!(
+        "The name of the current computer is '{}' ({})",
+        machine_name,
+        if is_pdc { "PDCe" } else { "Not PDCe" }
+    );
     Ok(is_pdc)
 }
 
 #[cfg(test)]
 mod tests {
-    mod flush_events_to_file {
-        use super::super::*;
-        use std::fs::File;
-        use tempfile::TempDir;
-
-        #[test]
-        fn it_should_create_the_file_if_it_does_not_exist() {
-            // Arrange
-            let tmp_dir = TempDir::new().unwrap();
-            let tmp_dir_path = tmp_dir.path().to_str().unwrap();
-            let tmp_file_path = format!("{tmp_dir_path}/out");
-
-            let enable_gzip = false;
-            let content = "Test".as_bytes().to_vec();
-
-            // Act
-            flush_events_to_file(&enable_gzip, &tmp_file_path, &content);
-
-            // Assert
-            let result = std::fs::read_to_string(&tmp_file_path).unwrap();
-            assert_eq!("Test", result);
-        }
-
-        #[test]
-        fn it_should_overwrite_the_file_content() {
-            // Arrange
-            let (_tmp_dir, tmp_file_path) = get_tmp_file_path("123");
-
-            let enable_gzip = false;
-            let content = "456".as_bytes().to_vec();
-
-            let result = std::fs::read_to_string(&tmp_file_path).unwrap();
-            assert_eq!("123", result);
-
-            // Act
-            flush_events_to_file(&enable_gzip, &tmp_file_path, &content);
-
-            // Assert
-            let result = std::fs::read_to_string(&tmp_file_path).unwrap();
-            assert_eq!("456", result);
-        }
-
-        #[test]
-        fn it_should_not_work_if_the_file_is_not_accessible() {
-            // Arrange
-            let (_tmp_dir, tmp_file_path) = get_tmp_file_path("123");
-
-            let enable_gzip = false;
-            let content = "456".as_bytes().to_vec();
-
-            let result = std::fs::read_to_string(&tmp_file_path).unwrap();
-            assert_eq!("123", result);
-
-            let sharing_mode = FileSystem::FILE_SHARE_NONE;
-            let file = fs::File::options()
-                .create(true)
-                .read(true)
-                .write(true)
-                .share_mode(sharing_mode.0)
-                .open(&tmp_file_path);
-
-            // Act
-            flush_events_to_file(&enable_gzip, &tmp_file_path, &content);
-
-            // Assert
-            drop(file);
-            let result = std::fs::read_to_string(&tmp_file_path).unwrap();
-            assert_eq!("123", result);
-        }
-
-        #[test]
-        fn it_should_compress_the_file_content_correctly() {
-            // Arrange
-            let (_tmp_dir, tmp_file_path) = get_tmp_file_path("123");
-
-            let enable_gzip = true;
-            let content = "456".as_bytes().to_vec();
-
-            const compressed_content: [u8; 23] = [
-                31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 51, 49, 53, 3, 0, 113, 195, 168, 177, 3, 0, 0, 0,
-            ];
-
-            // Act
-            flush_events_to_file(&enable_gzip, &tmp_file_path, &content);
-
-            // Assert
-            let result = std::fs::read(&tmp_file_path).unwrap();
-            assert_eq!(compressed_content.to_vec(), result);
-        }
-
-        fn get_tmp_file_path(content: &str) -> (TempDir, String) {
-            let tmp_dir = TempDir::new().unwrap();
-            let tmp_dir_path = tmp_dir.path().to_str().unwrap();
-            let tmp_file_path = format!("{tmp_dir_path}/out");
-
-            let mut file = File::create(&tmp_file_path).unwrap();
-            file.write_all(content.as_bytes()).unwrap();
-
-            (tmp_dir, tmp_file_path)
-        }
-    }
-
     mod build_channels {
         use crate::setup::build_channels;
 
@@ -1207,46 +1024,6 @@ mod tests {
                 #12#1#Microsoft-Windows-Kernel-General##\
                 20220801140858.000000-000##################\n"
             );
-        }
-    }
-
-    mod try_adjust_throughput {
-        use super::super::*;
-
-        #[test]
-        fn it_should_adjust_throughput_down() {
-            // Arrange
-            unsafe {
-                EVENT_LOGS_COUNT = 45000;
-                MAX_THROUGHPUT = 1500.0;
-                SLEEP_DURATION = StdTimeDuration::ZERO;
-                DURATION_LEAP = StdTimeDuration::from_millis(10);
-                let n: f32 = 15.0;
-
-                // Act
-                try_adjust_throughput(&n);
-
-                // Assert
-                assert_eq!(SLEEP_DURATION, DURATION_LEAP);
-            }
-        }
-
-        #[test]
-        fn it_should_adjust_throughput_up() {
-            // Arrange
-            unsafe {
-                EVENT_LOGS_COUNT = 12000;
-                MAX_THROUGHPUT = 1500.0;
-                SLEEP_DURATION = StdTimeDuration::from_millis(50);
-                DURATION_LEAP = StdTimeDuration::from_millis(10);
-                let n: f32 = 15.0;
-
-                // Act
-                try_adjust_throughput(&n);
-
-                // Assert
-                assert_eq!(SLEEP_DURATION, StdTimeDuration::from_millis(40));
-            }
         }
     }
 
