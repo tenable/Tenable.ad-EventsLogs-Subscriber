@@ -7,12 +7,32 @@ Tenable.ad IOA event logs listener, developed in **Rust**, is part of the **Tena
 It listens to **event logs** coming from channels declared in `TenableADEventsListenerConfiguration.json` configuration file, and filters those with declared event identifiers and provider names. The listener uses **EvtSubscribe Windows API** for this purpose.
 
 The listener **buffers** event logs during time intervals and **writes them to a file** regularly. The file can be compressed or not.
+Depending on the active mode, this file is then either:
+
+- Dropped on the SYSVOL share
+- Dropped on a dedicated SMB share
 
 ![Event logs listener GPO](/images/gpo.png "Event logs listener GPO")
 
 The listener also lowers impacts on the side of the domain controllers with the help of specific mechanisms (explicit CPU/RAM limitations, throttling, etc).
 
 ![Event logs listener running](/images/run.png "Event logs listener running")
+
+## Prerequisites
+
+### Install Rust and Cargo
+
+Install Rust and Cargo using `rustup` ([official documentation](https://www.rust-lang.org/tools/install))
+
+### Setup the Toolchain
+
+To set up the toolchain for a truly static binary:
+
+```bash
+rustup toolchain add stable-x86_64-pc-windows-msvc
+rustup target add x86_64-pc-windows-msvc
+rustup default stable-x86_64-pc-windows-msvc
+```
 
 ## Build
 
@@ -23,13 +43,15 @@ cargo build --release
 ## Run
 
 ```bash
-.\\Register-TenableADEventsListener.exe -t 15 -p 'C:\file.gz' -g
+.\Register-TenableADEventsListener.exe -t 15 -p 'C:\file.gz' -g
 ```
+
+All available command line arguments can be found in the [configuration file](src/configuration.rs).
 
 ## Help
 
 ```bash
-.\\Register-TenableADEventsListener.exe -h
+.\Register-TenableADEventsListener.exe -h
 ```
 
 ## Arguments
@@ -39,7 +61,7 @@ buffer. The listener flushed its buffer to the disk periodically.
 
 **USAGE**:
 ```
-    Register-TenableADEventsListener.exe [OPTIONS] --EventLogFilePath <EVENT_LOG_FILE_PATH> --TimerDurationSeconds <TIMER_DURATION_SECONDS>
+    .\Register-TenableADEventsListener.exe [OPTIONS] --EventLogFilePath <EVENT_LOG_FILE_PATH> --TimerDurationSeconds <TIMER_DURATION_SECONDS>
 ```
 
 **OPTIONS**:  
@@ -75,6 +97,9 @@ buffer. The listener flushed its buffer to the disk periodically.
 
     --UseXmlEventRender
             Use the legacy XML event rendering method for listeners. Although slower than the current values-based approach, it provides greater stability. This option is disabled by default.
+
+    -SmbShareLocation
+            The physical disk location (absolute path) for the SMB share when running on the PDCe. This is only applicable when running in the 'Dedicated SMB share' mode. This folder will be managed by Tenable Identity Exposure. By default 'C:\Tenable\IdentityExposure\IOALogs'. This parameter is optional.
 ```
 
 ## Contribution

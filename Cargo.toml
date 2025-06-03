@@ -22,7 +22,7 @@ minidom = "0.15.2"
 state = "0.5.3"
 timer = "0.2.0"
 memory-stats = "1.0.0"
-flate2 = "1.0.24"
+flate2 = "1.0.35"
 clap = { version = "3.2.14", features = ["derive"] }
 serde = { version = "1.0.140", features = ["derive"] }
 winreg = "0.10"

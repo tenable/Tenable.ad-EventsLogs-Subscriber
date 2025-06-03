@@ -1,3 +1,6 @@
 /target
 !*.lock
 sync
+.idea/
+.DS_Store
+*-ci.yaml
